@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
+import 'package:maga_app/src/pages/tela_confirmacao.dart';
 
 class TelaRegistrar extends StatelessWidget {
   const TelaRegistrar({super.key});
@@ -34,7 +35,7 @@ class TelaRegistrar extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,
@@ -50,7 +51,7 @@ class TelaRegistrar extends StatelessWidget {
                           children: [
                             Flexible(
                               child: RichText(
-                                text: TextSpan(
+                                text: const TextSpan(
                                   children: [
                                     TextSpan(
                                       text: "Bem-vindo ao ",
@@ -128,7 +129,7 @@ class TelaRegistrar extends StatelessWidget {
                         const SizedBox(height: 10),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF063FBA), // Cor do botão alterada
+                            backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -138,7 +139,11 @@ class TelaRegistrar extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => TelaPrincipal()),
+                              MaterialPageRoute(
+                                builder: (context) => TelaConfirmacao(
+                                  proximaTela: const TelaPrincipal(),
+                                ),
+                              ),
                             );
                           },
                           child: const Center(

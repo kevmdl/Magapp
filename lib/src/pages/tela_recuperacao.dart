@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:maga_app/src/pages/tela_login.dart';
 
-class TelaFormulario extends StatelessWidget {
-  const TelaFormulario({super.key});
+class TelaRecuperacao extends StatelessWidget {
+  const TelaRecuperacao({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +13,7 @@ class TelaFormulario extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+                colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -48,7 +49,7 @@ class TelaFormulario extends StatelessWidget {
                           children: [
                             const Center(
                               child: Text(
-                                "Formulário do Pedido",
+                                "Recuperar senha",
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -57,60 +58,31 @@ class TelaFormulario extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            const SizedBox(height: 10),
-                            const Text("Nome/Razão Social"),
+                            const Text("Nova senha"),
                             TextField(
+                              obscureText: true,
                               decoration: InputDecoration(
-                                hintText: "Digite o nome ou razão social",
+                                hintText: "Digite a senha",
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 10),
-                            const Text("CPF/CNPJ"),
+                            const Text("Repita a senha"),
                             TextField(
+                              obscureText: true,
                               decoration: InputDecoration(
-                                hintText: "Digite o CPF ou CNPJ",
+                                hintText: "Repita a senha",
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            const Text("Placa"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite a placa",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Renavam"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite o Renavam",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Chassi"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite o Chassi",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
+                                backgroundColor: const Color(0xFF063FBA),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
@@ -118,11 +90,13 @@ class TelaFormulario extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                // Lógica de fazer pedido
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const TelaLogin()),
+                                  (route) => false,
+                                );
                               },
-                              child: const Center(
-                                child: Text("Fazer Pedido"),
-                              ),
+                              child: const Center(child: Text("Confirmar")),
                             ),
                           ],
                         ),

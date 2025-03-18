@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
 import 'package:maga_app/src/pages/tela_registrar.dart';
+import 'package:maga_app/src/pages/tela_confirmacao.dart';
+import 'package:maga_app/src/pages/tela_recuperacao.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: TelaLogin(),
   ));
@@ -42,7 +44,7 @@ class TelaLogin extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
+                      boxShadow: const [
                         BoxShadow(
                           color: Colors.black26,
                           blurRadius: 10,
@@ -58,7 +60,7 @@ class TelaLogin extends StatelessWidget {
                           children: [
                             Flexible(
                               child: RichText(
-                                text: TextSpan(
+                                text: const TextSpan(
                                   children: [
                                     TextSpan(
                                       text: "Bem-vindo ao ",
@@ -76,7 +78,7 @@ class TelaLogin extends StatelessWidget {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => TelaRegistrar()),
+                                  MaterialPageRoute(builder: (context) => const TelaRegistrar()),
                                 );
                               },
                               child: const Text(
@@ -121,7 +123,14 @@ class TelaLogin extends StatelessWidget {
                           alignment: Alignment.centerRight,
                           child: TextButton(
                             onPressed: () {
-                              // Lógica de esqueci minha senha
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const TelaConfirmacao(
+                                    proximaTela: TelaRecuperacao(),
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text(
                               "Esqueci minha senha",
@@ -132,7 +141,7 @@ class TelaLogin extends StatelessWidget {
                         const SizedBox(height: 10),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF063FBA), // Cor do botão alterada
+                            backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -142,7 +151,7 @@ class TelaLogin extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => TelaPrincipal()),
+                              MaterialPageRoute(builder: (context) => const TelaPrincipal()),
                             );
                           },
                           child: const Center(

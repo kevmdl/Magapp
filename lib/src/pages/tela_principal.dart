@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/ai_menupage.dart';
 import 'package:maga_app/src/pages/tela_login.dart';
-import 'package:maga_app/src/pages/sup_chatscreen.dart'; // Adicionar este import
-import 'package:maga_app/src/pages/tela_pedido.dart'; // Adicionar este import
+import 'package:maga_app/src/pages/sup_chatscreen.dart'; 
+import 'package:maga_app/src/pages/tela_pedido.dart'; 
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: TelaPrincipal(),
   ));
@@ -28,7 +28,7 @@ class TelaPrincipal extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
@@ -42,13 +42,13 @@ class TelaPrincipal extends StatelessWidget {
                   Row(
                     children: [
                       PopupMenuButton(
-                        icon: Icon(Icons.menu, color: Colors.black),
-                        offset: Offset(0, 50),
+                        icon: const Icon(Icons.menu, color: Colors.black),
+                        offset: const Offset(0, 50),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
                         ),
                         itemBuilder: (context) => [
-                          PopupMenuItem(
+                          const PopupMenuItem(
                             child: Row(
                               children: [
                                 CircleAvatar(
@@ -61,7 +61,7 @@ class TelaPrincipal extends StatelessWidget {
                             ),
                           ),
                           PopupMenuItem(
-                            child: Row(
+                            child: const Row(
                               children: [
                                 Icon(Icons.exit_to_app, color: Color(0xFF063FBA)),
                                 SizedBox(width: 10),
@@ -73,7 +73,7 @@ class TelaPrincipal extends StatelessWidget {
                                 const Duration(seconds: 0),
                                 () => Navigator.pushAndRemoveUntil(
                                   context,
-                                  MaterialPageRoute(builder: (context) => TelaLogin()),
+                                  MaterialPageRoute(builder: (context) => const TelaLogin()),
                                   (route) => false,
                                 ),
                               );
@@ -87,7 +87,7 @@ class TelaPrincipal extends StatelessWidget {
                     'assets/img/logo_maga_app.png',
                     height: 80,
                   ),
-                  SizedBox(height: 5), // Ajustado o espaçamento
+                  const SizedBox(height: 5), // Ajustado o espaçamento
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -95,7 +95,7 @@ class TelaPrincipal extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => ChatScreen()),
+                            MaterialPageRoute(builder: (context) => const ChatScreen()),
                           );
                         },
                         child: _buildIconButton(Icons.person, "Contato"),
@@ -104,7 +104,7 @@ class TelaPrincipal extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TelaPedido()),
+                            MaterialPageRoute(builder: (context) => const TelaPedido()),
                           );
                         },
                         child: _buildIconButton(Icons.list, "Pedidos"),
@@ -113,7 +113,7 @@ class TelaPrincipal extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => MenuScreen()),
+                            MaterialPageRoute(builder: (context) => const MenuScreen()),
                           );
                         },
                         child: _buildIconButton(Icons.chat, "IA"),
@@ -150,7 +150,7 @@ class TelaPrincipal extends StatelessWidget {
     return Column(
       children: [
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
               colors: [Color(0xFF063FBA), Color(0xFF020e26)], // Azul gradiente
@@ -159,11 +159,11 @@ class TelaPrincipal extends StatelessWidget {
             ),
             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
           ),
-          padding: EdgeInsets.all(15),
+          padding: const EdgeInsets.all(15),
           child: Icon(icon, color: Colors.white, size: 30), // Ícone branco
         ),
-        SizedBox(height: 5),
-        Text(label, style: TextStyle(color: Colors.black)),
+        const SizedBox(height: 5),
+        Text(label, style: const TextStyle(color: Colors.black)),
       ],
     );
   }
@@ -183,7 +183,7 @@ class TelaPrincipal extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
                       colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
@@ -194,14 +194,14 @@ class TelaPrincipal extends StatelessWidget {
                   padding: const EdgeInsets.all(10),
                   child: Icon(icon, color: Colors.white, size: 30), // Ícone branco
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      SizedBox(height: 5),
-                      Text(description, style: TextStyle(fontSize: 14, color: Colors.black87)),
+                      Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 5),
+                      Text(description, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                     ],
                   ),
                 ),
@@ -226,7 +226,7 @@ class TelaPrincipal extends StatelessWidget {
             Container(
               width: 50,
               height: 50,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
@@ -240,14 +240,14 @@ class TelaPrincipal extends StatelessWidget {
                 fit: BoxFit.contain,
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 5),
-                  Text(description, style: TextStyle(fontSize: 14, color: Colors.black87)),
+                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Text(description, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                 ],
               ),
             ),

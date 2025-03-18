@@ -27,7 +27,7 @@ class _TelaPedidoState extends State<TelaPedido> {
           children: [
             // Header com logo e botão voltar
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(30),
@@ -41,7 +41,7 @@ class _TelaPedidoState extends State<TelaPedido> {
                   Row(
                     children: [
                       IconButton(
-                        icon: Icon(Icons.arrow_back, color: Colors.black),
+                        icon: const Icon(Icons.arrow_back, color: Colors.black),
                         onPressed: () => Navigator.pop(context),
                       ),
                       Expanded(
@@ -52,7 +52,7 @@ class _TelaPedidoState extends State<TelaPedido> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 40), // Para equilibrar o layout
+                      const SizedBox(width: 40), // Para equilibrar o layout
                     ],
                   ),
                 ],
@@ -100,7 +100,7 @@ class _TelaPedidoState extends State<TelaPedido> {
               _focusedDay = focusedDay;
             });
           },
-          headerStyle: HeaderStyle(
+          headerStyle: const HeaderStyle(
             formatButtonVisible: false,
             titleCentered: true,
             titleTextStyle: TextStyle(
@@ -113,18 +113,18 @@ class _TelaPedidoState extends State<TelaPedido> {
           ),
           calendarStyle: CalendarStyle(
             todayDecoration: BoxDecoration(
-              color: Color(0xFF063FBA).withOpacity(0.5),
+              color: const Color(0xFF063FBA).withOpacity(0.5),
               shape: BoxShape.circle,
             ),
-            selectedDecoration: BoxDecoration(
+            selectedDecoration: const BoxDecoration(
               color: Color(0xFF063FBA),
               shape: BoxShape.circle,
             ),
-            defaultTextStyle: TextStyle(color: Colors.black87),
-            weekendTextStyle: TextStyle(color: Colors.red),
-            outsideTextStyle: TextStyle(color: Colors.grey),
+            defaultTextStyle: const TextStyle(color: Colors.black87),
+            weekendTextStyle: const TextStyle(color: Colors.red),
+            outsideTextStyle: const TextStyle(color: Colors.grey),
           ),
-          daysOfWeekStyle: DaysOfWeekStyle(
+          daysOfWeekStyle: const DaysOfWeekStyle(
             weekdayStyle: TextStyle(color: Color(0xFF063FBA)),
             weekendStyle: TextStyle(color: Colors.red),
           ),
@@ -144,9 +144,9 @@ class _TelaPedidoState extends State<TelaPedido> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Meus Pedidos", 
+            const Text("Meus Pedidos", 
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Divider(),
+            const Divider(),
             _buildPedidoItem("01/01", "Placa: ******", "Renavam: *******", 
                            "Veículo/modelo: *****", "Cor: *****"),
             _buildPedidoItem("02/01", "Placa: ******", "Renavam: *******", 
@@ -164,8 +164,8 @@ class _TelaPedidoState extends State<TelaPedido> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(data, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          SizedBox(width: 15),
+          Text(data, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

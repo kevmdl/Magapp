@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
-class TelaFormulario extends StatelessWidget {
-  const TelaFormulario({super.key});
+class TelaConfirmacao extends StatelessWidget {
+  final Widget proximaTela;
+
+  const TelaConfirmacao({
+    super.key, 
+    required this.proximaTela,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +17,7 @@ class TelaFormulario extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+                colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -48,7 +53,7 @@ class TelaFormulario extends StatelessWidget {
                           children: [
                             const Center(
                               child: Text(
-                                "Formulário do Pedido",
+                                "Confirmação",
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -57,60 +62,44 @@ class TelaFormulario extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            const SizedBox(height: 10),
-                            const Text("Nome/Razão Social"),
+                            const Text("Número do celular"),
                             TextField(
+                              keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                hintText: "Digite o nome ou razão social",
+                                hintText: "Digite o número",
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
+                            const SizedBox(height: 5),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {
+                                  // Lógica para enviar código
+                                },
+                                child: const Text(
+                                  "Enviar código",
+                                  style: TextStyle(color: Color(0xFF0F59F7)),
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 10),
-                            const Text("CPF/CNPJ"),
+                            const Text("Código"),
                             TextField(
+                              keyboardType: TextInputType.number,
                               decoration: InputDecoration(
-                                hintText: "Digite o CPF ou CNPJ",
+                                hintText: "Digite o código",
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 10),
-                            const Text("Placa"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite a placa",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Renavam"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite o Renavam",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Chassi"),
-                            TextField(
-                              decoration: InputDecoration(
-                                hintText: "Digite o Chassi",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 20),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
+                                backgroundColor: const Color(0xFF063FBA),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
@@ -118,11 +107,12 @@ class TelaFormulario extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                // Lógica de fazer pedido
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => proximaTela),
+                                );
                               },
-                              child: const Center(
-                                child: Text("Fazer Pedido"),
-                              ),
+                              child: const Center(child: Text("Validar")),
                             ),
                           ],
                         ),

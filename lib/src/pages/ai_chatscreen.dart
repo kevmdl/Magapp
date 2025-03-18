@@ -46,9 +46,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
+        preferredSize: const Size.fromHeight(100),
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
               begin: Alignment.topCenter,
@@ -62,10 +62,10 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           child: AppBar(
             backgroundColor: Colors.transparent,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
@@ -83,8 +83,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                       fit: BoxFit.contain,
                     ),
                   ),
-                  SizedBox(width: 10),
-                  Text(
+                  const SizedBox(width: 10),
+                  const Text(
                     'Chatbot',
                     style: TextStyle(
                       color: Colors.white,
@@ -104,19 +104,19 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             children: [
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.all(8),
-                  children: [
+                  padding: const EdgeInsets.all(8),
+                  children: const [
                     ChatBubble(isUser: true, text: 'Olá, pode me tirar uma dúvida?'),
                     ChatBubble(isUser: false, text: 'Claro, estou à disposição!'),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 child: Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.attach_file, color: Color(0xFF063FBA)),
+                      icon: const Icon(Icons.attach_file, color: Color(0xFF063FBA)),
                       onPressed: _toggleMenu,
                     ),
                     Expanded(
@@ -131,16 +131,16 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide(color: Color(0xFF063FBA)),
+                            borderSide: const BorderSide(color: Color(0xFF063FBA)),
                           ),
                           labelText: 'Digite sua mensagem...',
-                          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),
                       ),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     IconButton(
-                      icon: Icon(Icons.send, color: Color(0xFF063FBA)),
+                      icon: const Icon(Icons.send, color: Color(0xFF063FBA)),
                       onPressed: () {
                         // Lógica para enviar mensagens
                       },
@@ -167,8 +167,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                           // Ação do documento
                           _toggleMenu();
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -189,11 +189,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                           _toggleMenu();
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TelaFormulario()),
+                            MaterialPageRoute(builder: (context) => const TelaFormulario()),
                           );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -232,8 +232,8 @@ class ChatBubble extends StatelessWidget {
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: EdgeInsets.symmetric(vertical: 4),
-        padding: EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isUser ? const Color(0xFF011640) : const Color(0xFFDFECF6),
           borderRadius: BorderRadius.circular(8),
