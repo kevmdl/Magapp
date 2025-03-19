@@ -25,7 +25,7 @@ class _TelaPedidoState extends State<TelaPedido> {
         ),
         child: Column(
           children: [
-            // Header com logo e botão voltar
+          
             Container(
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -52,7 +52,7 @@ class _TelaPedidoState extends State<TelaPedido> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 40), // Para equilibrar o layout
+                      const SizedBox(width: 40),
                     ],
                   ),
                 ],

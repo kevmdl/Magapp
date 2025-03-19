@@ -12,7 +12,7 @@ class TelaFormulario extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+                colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -110,7 +110,7 @@ class TelaFormulario extends StatelessWidget {
                             const SizedBox(height: 10),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
+                                backgroundColor: const Color(0xFF063FBA), 
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
@@ -118,7 +118,36 @@ class TelaFormulario extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () {
-                                // Lógica de fazer pedido
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      title: const Row(
+                                        children: [
+                                          Icon(Icons.check_circle, color: Color(0xFF063FBA)),
+                                          SizedBox(width: 10),
+                                          Text("Sucesso!"),
+                                        ],
+                                      ),
+                                      content: const Text("Pedido feito com sucesso!"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(); 
+                                            Navigator.of(context).pop(); 
+                                          },
+                                          child: const Text(
+                                            "OK",
+                                            style: TextStyle(color: Color(0xFF063FBA)),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
                               child: const Center(
                                 child: Text("Fazer Pedido"),

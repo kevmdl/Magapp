@@ -3,6 +3,8 @@ import 'package:maga_app/src/pages/ai_menupage.dart';
 import 'package:maga_app/src/pages/tela_login.dart';
 import 'package:maga_app/src/pages/sup_chatscreen.dart'; 
 import 'package:maga_app/src/pages/tela_pedido.dart'; 
+import 'package:maga_app/src/pages/tela_perfil.dart';
+import 'package:maga_app/src/pages/tela_clientes.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -20,7 +22,7 @@ class TelaPrincipal extends StatelessWidget {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+            colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -48,8 +50,8 @@ class TelaPrincipal extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15),
                         ),
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            child: Row(
+                          PopupMenuItem(
+                            child: const Row(
                               children: [
                                 CircleAvatar(
                                   backgroundColor: Color(0xFF063FBA),
@@ -59,6 +61,36 @@ class TelaPrincipal extends StatelessWidget {
                                 Text("Usuário"),
                               ],
                             ),
+                            onTap: () {
+                              Future.delayed(
+                                const Duration(seconds: 0),
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const TelaPerfil()),
+                                ),
+                              );
+                            },
+                          ),
+                          PopupMenuItem(
+                            child: const Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundColor: Color(0xFF063FBA),
+                                  child: Icon(Icons.admin_panel_settings, color: Colors.white),
+                                ),
+                                SizedBox(width: 10),
+                                Text("Área Administrativa"),
+                              ],
+                            ),
+                            onTap: () {
+                              Future.delayed(
+                                const Duration(seconds: 0),
+                                () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const TelaClientes()),
+                                ),
+                              );
+                            },
                           ),
                           PopupMenuItem(
                             child: const Row(
@@ -87,7 +119,7 @@ class TelaPrincipal extends StatelessWidget {
                     'assets/img/logo_maga_app.png',
                     height: 80,
                   ),
-                  const SizedBox(height: 5), // Ajustado o espaçamento
+                  const SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -145,22 +177,48 @@ class TelaPrincipal extends StatelessWidget {
     );
   }
 
-  // Função para construir os botões circulares
+
   Widget _buildIconButton(IconData icon, String label) {
+    if (label == "IA") {
+      return Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFF063FBA), Color(0xFF020e26)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
+            ),
+            padding: const EdgeInsets.all(15),
+            child: Image.asset(
+              'assets/img/logo_ia.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(label, style: const TextStyle(color: Colors.black)),
+        ],
+      );
+    }
     return Column(
       children: [
         Container(
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [Color(0xFF063FBA), Color(0xFF020e26)], // Azul gradiente
+              colors: [Color(0xFF063FBA), Color(0xFF020e26)], 
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
             boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
           ),
           padding: const EdgeInsets.all(15),
-          child: Icon(icon, color: Colors.white, size: 30), // Ícone branco
+          child: Icon(icon, color: Colors.white, size: 30), 
         ),
         const SizedBox(height: 5),
         Text(label, style: const TextStyle(color: Colors.black)),
@@ -168,7 +226,7 @@ class TelaPrincipal extends StatelessWidget {
     );
   }
 
-  // Função para construir os cards brancos
+
   Widget _buildCard(IconData icon, String title, String description, [VoidCallback? onTap]) {
     return GestureDetector(
       onTap: onTap,
@@ -186,13 +244,13 @@ class TelaPrincipal extends StatelessWidget {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+                      colors: [Color(0xFF0F59F7), Color(0xFF020e26)], 
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                   ),
                   padding: const EdgeInsets.all(10),
-                  child: Icon(icon, color: Colors.white, size: 30), // Ícone branco
+                  child: Icon(icon, color: Colors.white, size: 30),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -213,7 +271,7 @@ class TelaPrincipal extends StatelessWidget {
     );
   }
 
-  // Adicione este novo método para construir o card com imagem
+
   Widget _buildCardWithImage(String title, String description) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

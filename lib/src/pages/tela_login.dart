@@ -21,7 +21,7 @@ class TelaLogin extends StatelessWidget {
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+            colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -102,7 +102,7 @@ class TelaLogin extends StatelessWidget {
                         const Text("Digite seu email:"),
                         TextField(
                           decoration: InputDecoration(
-                            hintText: "Exemplo@....com",
+                            hintText: "...@example.com",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -113,7 +113,7 @@ class TelaLogin extends StatelessWidget {
                         TextField(
                           obscureText: true,
                           decoration: InputDecoration(
-                            hintText: "Senha",
+                            hintText: "********",
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -141,7 +141,7 @@ class TelaLogin extends StatelessWidget {
                         const SizedBox(height: 10),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
+                            backgroundColor: const Color(0xFF063FBA), 
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(
@@ -178,7 +178,7 @@ class TelaLogin extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            // Lógica de login com Google
+                      
                           },
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
