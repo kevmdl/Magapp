@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:validatorless/validatorless.dart';
 
-class TelaConfirmacao extends StatelessWidget {
+class TelaConfirmacao extends StatefulWidget {
   final Widget proximaTela;
 
   const TelaConfirmacao({
     super.key, 
     required this.proximaTela,
   });
+
+  @override
+  State<TelaConfirmacao> createState() => _TelaConfirmacaoState();
+}
+
+class _TelaConfirmacaoState extends State<TelaConfirmacao> {
+  final _formKey = GlobalKey<FormState>();
+  final _telefoneController = TextEditingController();
+  final _codigoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _telefoneController.dispose();
+    _codigoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,98 +43,117 @@ class TelaConfirmacao extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/img/logo_maga.png',
-                        height: 100,
-                      ),
-                      const SizedBox(height: 30),
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/img/logo_maga.png',
+                          height: 100,
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Center(
-                              child: Text(
-                                "Confirmação",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                        const SizedBox(height: 30),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Center(
+                                child: Text(
+                                  "Confirmação",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text("Número do celular"),
-                            TextField(
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                hintText: "Digite o número",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 20),
+                              const Text("Número do celular"),
+                              TextFormField(
+                                controller: _telefoneController,
+                                keyboardType: TextInputType.phone,
+                                decoration: InputDecoration(
+                                  hintText: "Digite o número",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Telefone obrigatório'),
+                                  Validatorless.number('Apenas números'),
+                                  Validatorless.min(11, 'Telefone inválido'),
+                                ]),
+                              ),
+                              const SizedBox(height: 5),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                  onPressed: () {
+                                    // Lógica para enviar código
+                                  },
+                                  child: const Text(
+                                    "Enviar código",
+                                    style: TextStyle(color: Color(0xFF0F59F7)),
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 5),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
+                              const SizedBox(height: 10),
+                              const Text("Código"),
+                              TextFormField(
+                                controller: _codigoController,
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  hintText: "Digite o código",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Código obrigatório'),
+                                  Validatorless.number('Apenas números'),
+                                  Validatorless.min(6, 'Código deve ter 6 dígitos'),
+                                  Validatorless.max(6, 'Código deve ter 6 dígitos'),
+                                ]),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF063FBA),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
                                 onPressed: () {
-                                  // Lógica para enviar código
+                                  final formValid = _formKey.currentState?.validate() ?? false;
+                                  if (formValid) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => widget.proximaTela),
+                                    );
+                                  }
                                 },
-                                child: const Text(
-                                  "Enviar código",
-                                  style: TextStyle(color: Color(0xFF0F59F7)),
-                                ),
+                                child: const Center(child: Text("Validar")),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Código"),
-                            TextField(
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                hintText: "Digite o código",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF063FBA),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => proximaTela),
-                                );
-                              },
-                              child: const Center(child: Text("Validar")),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

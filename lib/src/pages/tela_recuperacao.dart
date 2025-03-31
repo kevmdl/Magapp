@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_login.dart';
+import 'package:validatorless/validatorless.dart';
 
-class TelaRecuperacao extends StatelessWidget {
+class TelaRecuperacao extends StatefulWidget {
   const TelaRecuperacao({super.key});
+
+  @override
+  State<TelaRecuperacao> createState() => _TelaRecuperacaoState();
+}
+
+class _TelaRecuperacaoState extends State<TelaRecuperacao> {
+  final _formKey = GlobalKey<FormState>();
+  final _senhaController = TextEditingController();
+  final _confirmaSenhaController = TextEditingController();
+
+  @override
+  void dispose() {
+    _senhaController.dispose();
+    _confirmaSenhaController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,61 +61,77 @@ class TelaRecuperacao extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Center(
-                              child: Text(
-                                "Recuperar senha",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Center(
+                                child: Text(
+                                  "Recuperar senha",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            const Text("Nova senha"),
-                            TextField(
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                hintText: "Digite a senha",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 20),
+                              const Text("Nova senha"),
+                              TextFormField(
+                                controller: _senhaController,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  hintText: "Digite a senha",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Senha obrigatória'),
+                                  Validatorless.min(6, 'Senha deve ter no mínimo 6 caracteres'),
+                                ]),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Text("Repita a senha"),
-                            TextField(
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                hintText: "Repita a senha",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 10),
+                              const Text("Repita a senha"),
+                              TextFormField(
+                                controller: _confirmaSenhaController,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  hintText: "Repita a senha",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Confirmação de senha obrigatória'),
+                                  Validatorless.compare(_senhaController, 'Senhas não conferem'),
+                                ]),
                               ),
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF063FBA),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF063FBA),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                 ),
+                                onPressed: () {
+                                  final formValid = _formKey.currentState?.validate() ?? false;
+                                  if (formValid) {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const TelaLogin()),
+                                      (route) => false,
+                                    );
+                                  }
+                                },
+                                child: const Center(child: Text("Confirmar")),
                               ),
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const TelaLogin()),
-                                  (route) => false,
-                                );
-                              },
-                              child: const Center(child: Text("Confirmar")),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],
