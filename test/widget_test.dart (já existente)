@@ -1,0 +1,6 @@
+const widget = require('widget');
+const authMock = require('../mocks/auth_mock');
+
+test('hello world!', () => {
+	expect(widget.someFunction()).toBe(true);
+});
