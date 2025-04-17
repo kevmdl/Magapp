@@ -7,7 +7,6 @@ class AuthMock {
     return username.isNotEmpty && password.length >= 6;
   }
 
-  // Métodos adicionais para testes com email
   bool loginWithEmail(String email, String password) {
     return email == 'test@example.com' && password == 'password123';
   }

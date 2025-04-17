@@ -5,7 +5,7 @@ import 'package:maga_app/src/pages/tela_principal.dart';
 import '../mocks/auth_mock.dart';
 
 void main() {
-  // Testes unitários do serviço de autenticação
+
   group('AuthMock login tests', () {
     test('Login bem-sucedido', () {
       final auth = AuthMock();
@@ -26,21 +26,21 @@ void main() {
     });
   });
 
-  // Testes de widget para a tela de login
+
   group('TelaLogin widget tests', () {
     testWidgets('Deve encontrar campos de email e senha', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: TelaLogin()));
       
-      expect(find.text('Digite seu email:'), findsOneWidget);
-      expect(find.text('Digite sua senha:'), findsOneWidget);
-      expect(find.byType(TextFormField), findsAtLeast(2));
-      expect(find.text('Login'), findsOneWidget);
+      expect(find.byKey(const Key('loginTitleKey')), findsOneWidget);  // Use a key do título
+      expect(find.byKey(const Key('emailFieldKey')), findsOneWidget);  // Use a key do campo de email
+      expect(find.byKey(const Key('passwordFieldKey')), findsOneWidget);  // Use a key do campo de senha
+      expect(find.byKey(const Key('loginButtonKey')), findsOneWidget);  // Use a key do botão
     });
 
     testWidgets('Deve mostrar erros quando campos estão vazios', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: TelaLogin()));
       
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.byKey(const Key('loginButtonKey')));  // Use a key do botão
       await tester.pump();
       
       expect(find.text('E-mail obrigatório'), findsOneWidget);
@@ -51,7 +51,7 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: TelaLogin()));
       
       await tester.enterText(find.byType(TextFormField).first, 'emailinvalido');
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.byKey(const Key('loginButtonKey')));  // Use a key do botão
       await tester.pump();
       
       expect(find.text('E-mail inválido'), findsOneWidget);
@@ -62,7 +62,7 @@ void main() {
       
       await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
       await tester.enterText(find.byType(TextFormField).at(1), '123');
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.byKey(const Key('loginButtonKey')));  // Use a key do botão
       await tester.pump();
       
       expect(find.text('Senha deve ter no mínimo 6 caracteres'), findsOneWidget);
@@ -73,7 +73,7 @@ void main() {
       
       await tester.enterText(find.byType(TextFormField).first, 'test@example.com');
       await tester.enterText(find.byType(TextFormField).at(1), 'password123');
-      await tester.tap(find.text('Login'));
+      await tester.tap(find.byKey(const Key('loginButtonKey')));  // Use a key do botão
       await tester.pumpAndSettle();
       
       expect(find.byType(TelaPrincipal), findsOneWidget);

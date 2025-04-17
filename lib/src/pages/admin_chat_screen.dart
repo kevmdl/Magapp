@@ -135,6 +135,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
         if (mounted) {
           setState(() {
             _messages.add(
+              // ignore: prefer_const_constructors
               ChatMessage(
                 message: 'Mensagem recebida, obrigado!',
                 isAdmin: false,

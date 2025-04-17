@@ -110,6 +110,7 @@ class _TelaLoginState extends State<TelaLogin> {
                           const SizedBox(height: 10),
                           const Text(
                             "Login",
+                            key: Key('loginTitleKey'), // Adicionando key para o título
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -120,6 +121,7 @@ class _TelaLoginState extends State<TelaLogin> {
                           const SizedBox(height: 10),
                           const Text("Digite seu email:"),
                           TextFormField(
+                            key: Key('emailFieldKey'), // Adicionando key para o campo de email
                             controller: _emailController,
                             decoration: InputDecoration(
                               hintText: "Exemplo@....com",
@@ -135,6 +137,7 @@ class _TelaLoginState extends State<TelaLogin> {
                           const SizedBox(height: 10),
                           const Text("Digite sua senha:"),
                           TextFormField(
+                            key: Key('passwordFieldKey'), // Adicionando key para o campo de senha
                             controller: _senhaController,
                             obscureText: true,
                             decoration: InputDecoration(
@@ -169,6 +172,7 @@ class _TelaLoginState extends State<TelaLogin> {
                           ),
                           const SizedBox(height: 10),
                           ElevatedButton(
+                            key: Key('loginButtonKey'), // Adicionando key para o botão de login
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
                               foregroundColor: Colors.white,
