@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_login.dart';
 import 'package:maga_app/src/pages/tela_recuperacao.dart';
+import 'package:maga_app/src/services/auth_service.dart';
 
 class TelaPerfil extends StatefulWidget {
   const TelaPerfil({super.key});
@@ -12,15 +13,54 @@ class TelaPerfil extends StatefulWidget {
 class _TelaPerfilState extends State<TelaPerfil> {
   final Map<String, bool> _editingMap = {};
   final Map<String, TextEditingController> _controllers = {};
+  final _authService = AuthService();
+  bool _isLoading = false;
   String displayName = 'Nome Usuário';
   String displayEmail = 'nomeusuario@example.com';
+  String displayPhone = '** *****-1234';
 
   @override
   void initState() {
     super.initState();
     _controllers['Nome:'] = TextEditingController(text: displayName);
     _controllers['Email:'] = TextEditingController(text: displayEmail);
-    _controllers['Celular:'] = TextEditingController(text: '** *****-1234');
+    _controllers['Celular:'] = TextEditingController(text: displayPhone);
+    _carregarDadosUsuario();
+  }
+
+  Future<void> _carregarDadosUsuario() async {
+    final userData = await _authService.getUserData();
+    if (userData != null) {
+      setState(() {
+        displayName = userData['nome'] ?? 'Nome Usuário';
+        displayEmail = userData['email'] ?? 'nomeusuario@example.com';
+        displayPhone = userData['telefone'] ?? '** *****-1234';
+
+        _controllers['Nome:']?.text = displayName;
+        _controllers['Email:']?.text = displayEmail;
+        _controllers['Celular:']?.text = displayPhone;
+      });
+    }
+  }
+
+  Future<void> _fazerLogout() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await _authService.logout();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const TelaLogin()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -34,7 +74,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
     return Scaffold(
       body: Stack(
         children: [
-        
           Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -51,7 +90,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                    
                       const CircleAvatar(
                         radius: 50,
                         backgroundImage: AssetImage('assets/img/perfil.png'),
@@ -73,7 +111,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
                         ),
                       ),
                       const SizedBox(height: 30),
-
                       Container(
                         padding: const EdgeInsets.all(20),
                         width: double.infinity,
@@ -91,9 +128,9 @@ class _TelaPerfilState extends State<TelaPerfil> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildInfo("Nome:", "Nome Usuário"),
-                            _buildInfo("Email:", "nomeusuario@example.com"),
-                            _buildInfo("Celular:", "** *****-1234"),
+                            _buildInfo("Nome:", displayName),
+                            _buildInfo("Email:", displayEmail),
+                            _buildInfo("Celular:", displayPhone),
                             const SizedBox(height: 20),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -132,20 +169,23 @@ class _TelaPerfilState extends State<TelaPerfil> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const TelaLogin()),
-                                  (route) => false,
-                                );
-                              },
-                              child: const Text(
-                                "Sair",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              onPressed: _isLoading ? null : _fazerLogout,
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      "Sair",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ],
                         ),
@@ -156,8 +196,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
               ),
             ),
           ),
-
-          // Botão de voltar
           Positioned(
             top: 40,
             left: 10,
@@ -171,7 +209,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
     );
   }
 
-  // Widget auxiliar para exibir informações
   Widget _buildInfo(String label, String value) {
     _editingMap[label] ??= false;
     _controllers[label] ??= TextEditingController(text: value);
@@ -221,6 +258,8 @@ class _TelaPerfilState extends State<TelaPerfil> {
                         displayName = _controllers[label]!.text;
                       } else if (label == 'Email:') {
                         displayEmail = _controllers[label]!.text;
+                      } else if (label == 'Celular:') {
+                        displayPhone = _controllers[label]!.text;
                       }
                     }
                   });

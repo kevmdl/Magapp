@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
 import 'package:maga_app/src/pages/tela_confirmacao.dart';
 import 'package:validatorless/validatorless.dart';
+import 'package:maga_app/src/services/auth_service.dart';
 
 class TelaRegistrar extends StatefulWidget {
   const TelaRegistrar({super.key});
@@ -16,6 +17,8 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
   final _nomeController = TextEditingController();
   final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _authService = AuthService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,6 +27,61 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
     _telefoneController.dispose();
     _senhaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fazerRegistro() async {
+    final formValid = _formKey.currentState?.validate() ?? false;
+
+    if (formValid) {
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final success = await _authService.register(
+          _emailController.text,
+          _nomeController.text,
+          _telefoneController.text,
+          _senhaController.text,
+        );
+
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+
+        if (success && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TelaConfirmacao(
+                proximaTela: const TelaPrincipal(),
+              ),
+            ),
+          );
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao realizar o registro'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro no servidor: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -177,22 +235,17 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onPressed: () {
-                              final formValid = _formKey.currentState?.validate() ?? false;
-                              if (formValid) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TelaConfirmacao(
-                                      proximaTela: const TelaPrincipal(),
+                            onPressed: _isLoading ? null : _fazerRegistro,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
                                     ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: const Center(
-                              child: Text("Registrar"),
-                            ),
+                                  )
+                                : const Center(child: Text("Registrar")),
                           ),
                           const SizedBox(height: 10),
                           const Center(
