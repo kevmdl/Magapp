@@ -216,14 +216,14 @@ class TelaClientes extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         title: const Text('Novo Cliente'),
-        content: Column(
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              decoration: const InputDecoration(labelText: 'Nome'),
+              decoration: InputDecoration(labelText: 'Nome'),
             ),
             TextField(
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: InputDecoration(labelText: 'Email'),
             ),
           ],
         ),

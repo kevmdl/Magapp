@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_formulario.dart';
+import 'package:maga_app/src/services/api_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -13,6 +14,21 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   late Animation<double> _animation;
   bool _isMenuOpen = false;
 
+  // Controlador para o campo de texto da mensagem
+  final TextEditingController _messageController = TextEditingController();
+
+  // ID do usuário atual (obtido do login)
+  String _currentUserId = 'demo_id'; // Valor padrão para demonstração
+
+  // Lista de mensagens
+  List<Map<String, dynamic>> _messages = [];
+
+  // ID do assistente (destinatário fixo para este exemplo)
+  final String _assistantId = '1'; // ID do assistente no backend
+
+  // Flag para indicar carregamento
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -23,11 +39,112 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     _animation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
+
+    // Carregar o ID do usuário atual e as mensagens quando a tela for iniciada
+    _loadCurrentUser();
+    _loadMessages();
+  }
+
+  // Carregar informações do usuário atual
+  Future<void> _loadCurrentUser() async {
+    final userData = await ApiService.getUsuarioAtual();
+    if (userData != null && userData['id'] != null) {
+      setState(() {
+        _currentUserId = userData['id'].toString();
+      });
+    }
+  }
+
+  // Carregar as mensagens do chat
+  Future<void> _loadMessages() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final messages = await ApiService.getMensagens(_currentUserId, _assistantId);
+      setState(() {
+        _messages = messages;
+      });
+    } catch (e) {
+      // Em caso de erro, mostrar algumas mensagens de teste
+      setState(() {
+        _messages = [
+          {
+            'id': 1,
+            'remetente_id': _currentUserId,
+            'destinatario_id': _assistantId,
+            'conteudo': 'Olá, pode me tirar uma dúvida?',
+            'timestamp': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
+          },
+          {
+            'id': 2,
+            'remetente_id': _assistantId,
+            'destinatario_id': _currentUserId,
+            'conteudo': 'Claro, estou à disposição!',
+            'timestamp': DateTime.now().subtract(const Duration(minutes: 4)).toIso8601String(),
+          },
+        ];
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  // Enviar uma nova mensagem
+  Future<void> _sendMessage() async {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
+    // Limpar o campo de texto
+    _messageController.clear();
+
+    // Criar uma mensagem temporária para exibição imediata
+    final tempMessage = {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'remetente_id': _currentUserId,
+      'destinatario_id': _assistantId,
+      'conteudo': text,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    // Adicionar a mensagem à lista
+    setState(() {
+      _messages.add(tempMessage);
+    });
+
+    // Enviar a mensagem para o backend
+    try {
+      final success = await ApiService.enviarMensagem(
+        remetenteId: _currentUserId,
+        destinatarioId: _assistantId,
+        conteudo: text,
+      );
+
+      if (success) {
+        // Recarregar as mensagens para obter a versão correta do backend
+        // Em um ambiente de produção, você poderia implementar WebSockets para
+        // atualização em tempo real em vez de recarregar
+        _loadMessages();
+        
+        // Removida a notificação de sucesso conforme solicitado
+      }
+    } catch (e) {
+      // Exibir erro (opcional)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao enviar mensagem: $e')),
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -100,13 +217,21 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
           Column(
             children: [
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(8),
-                  children: const [
-                    ChatBubble(isUser: true, text: 'Olá, pode me tirar uma dúvida?'),
-                    ChatBubble(isUser: false, text: 'Claro, estou à disposição!'),
-                  ],
-                ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          final isUser = message['remetente_id'] == _currentUserId;
+
+                          return ChatBubble(
+                            isUser: isUser,
+                            text: message['conteudo'] ?? '',
+                          );
+                        },
+                      ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8),
@@ -118,6 +243,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     ),
                     Expanded(
                       child: TextField(
+                        controller: _messageController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
@@ -133,14 +259,13 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                           labelText: 'Digite sua mensagem...',
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),
+                        onSubmitted: (_) => _sendMessage(),
                       ),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
                       icon: const Icon(Icons.send, color: Color(0xFF063FBA)),
-                      onPressed: () {
-                        // Lógica para enviar mensagens
-                      },
+                      onPressed: _sendMessage,
                     ),
                   ],
                 ),
@@ -171,12 +296,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(Icons.description, color: Color(0xFF063FBA)),
                               SizedBox(width: 12),
-                              Text("Anexar documento", 
-                                style: TextStyle(
-                                  color: Color(0xFF063FBA),
-                                  fontSize: 16,
-                                )
-                              ),
+                              Text("Anexar documento",
+                                  style: TextStyle(
+                                    color: Color(0xFF063FBA),
+                                    fontSize: 16,
+                                  )),
                             ],
                           ),
                         ),
@@ -196,12 +320,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                             children: [
                               Icon(Icons.assignment, color: Color(0xFF063FBA)),
                               SizedBox(width: 12),
-                              Text("Fazer Pedido", 
-                                style: TextStyle(
-                                  color: Color(0xFF063FBA),
-                                  fontSize: 16,
-                                )
-                              ),
+                              Text("Fazer Pedido",
+                                  style: TextStyle(
+                                    color: Color(0xFF063FBA),
+                                    fontSize: 16,
+                                  )),
                             ],
                           ),
                         ),

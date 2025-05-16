@@ -39,7 +39,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         } else {
           timer.cancel();
           // Aguardar um momento antes de navegar
-          Future.delayed(Duration(milliseconds: 500), () {
+          Future.delayed(const Duration(milliseconds: 500), () {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => widget.nextScreen)
             );

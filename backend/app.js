@@ -1,59 +1,18 @@
-const express = require("express");
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
-
-// Configuração do banco de dados
-const db = require("./config/db");
-
-// Importação do gerenciador de Socket.IO
-const SocketManager = require('./socket/socketManager');
-
-// Importação das rotas
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const messageRoutes = require('./routes/messages');
-const channelRoutes = require('./routes/channels');
-
-// Inicialização do app Express
+const express = require("express");
+const cors = require("cors"); // Adicionar CORS para permitir requisições do Flutter
 const app = express();
-const server = http.createServer(app);
+require("dotenv").config();
+const db = require("./config/db");
+const chatRoutes = require("./routes/chat"); // Importar rotas de chat
 
-// Configuração do Socket.IO
-const io = new Server(server, {
-  cors: {
-    origin: '*', // Em produção, defina as origens permitidas
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
-
-// Middleware
-app.use(cors({
-  origin: '*', // Em produção, defina as origens permitidas
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  credentials: true
-}));
+// Middleware para permitir CORS
+app.use(cors());
 app.use(express.json());
 
-// Configuração das rotas
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/channels', channelRoutes);
+// Usar rotas de chat
+app.use("/chat", chatRoutes);
 
-// Rota de status da API
-app.get('/api/status', (req, res) => {
-  res.json({
-    status: 'online',
-    serverTime: new Date(),
-    message: 'API de chat funcionando corretamente'
-  });
-});
-
-// Mantendo rota de login legada para compatibilidade
 app.post("/login", (req, res) => {
     console.log(req.body);
 
@@ -76,18 +35,42 @@ app.post("/login", (req, res) => {
                 return res.status(401).json({ message: "Usuário não encontrado" });
             }
 
-            const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
+            const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
             res.json({ token });
         }
     );
 });
 
-// Inicialização do gerenciador de sockets
-const socketManager = new SocketManager(io);
-
-// Inicialização do servidor
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Acesse http://localhost:${PORT}/api/status para verificar o status da API`);
+// Adicionar rota de login de demonstração
+app.post("/login/demo", (req, res) => {
+    console.log("Login de demonstração solicitado:", req.body);
+    
+    const { email, senha } = req.body;
+    
+    // Para fins de demonstração, aceitar qualquer email com senha "demo123"
+    if (!email || senha !== "demo123") {
+        return res.status(401).json({ 
+            success: false,
+            message: "Credenciais inválidas. Use qualquer email com a senha: demo123" 
+        });
+    }
+    
+    // Gerar um token de demonstração
+    const userId = "demo_id";
+    const token = jwt.sign({ userId }, process.env.JWT_SECRET || "demo_secret_key", { expiresIn: "1h" });
+    
+    // Retornar dados de usuário de demonstração
+    res.json({
+        success: true,
+        message: "Login de demonstração bem-sucedido",
+        token: token,
+        usuario: {
+            id: "demo_id",
+            nome: "Usuário Demo",
+            email: email,
+            perfil: "demo"
+        }
+    });
 });
+
+app.listen(3000, () => console.log("Servidor rodando na porta 3000"));

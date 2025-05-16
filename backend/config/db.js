@@ -1,16 +1,39 @@
-const mysql = require("mysql2");
 require("dotenv").config();
 
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: "meu_app",
-});
+// Simulação de banco de dados em memória para demonstração
+const mockDB = {
+  users: [
+    { id: 1, email: 'demo@example.com', nome: 'Usuário Demo', password: 'demo123' }
+  ],
+  messages: []
+};
 
-connection.connect(err => {
-  if (err) throw err;
-  console.log("Banco conectado com sucesso!");
-});
+// Função simulada para consultas
+const mockConnection = {
+  query: (sql, params, callback) => {
+    console.log('Simulando consulta SQL:', sql);
+    
+    // Simular consulta de usuário para login
+    if (sql.includes('SELECT * FROM usuario WHERE id = ?')) {
+      const userId = params[0];
+      const user = mockDB.users.find(u => u.id == userId);
+      
+      if (callback) {
+        if (user) {
+          callback(null, [user]);
+        } else {
+          callback(null, []);
+        }
+      }
+    } else {
+      // Para outras consultas, retornar um array vazio
+      if (callback) {
+        callback(null, []);
+      }
+    }
+  }
+};
 
-module.exports = connection;
+console.log('Usando banco de dados simulado para demonstração');
+
+module.exports = mockConnection;
