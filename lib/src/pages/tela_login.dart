@@ -5,6 +5,8 @@ import 'package:maga_app/src/pages/tela_confirmacao.dart';
 import 'package:maga_app/src/pages/tela_recuperacao.dart';
 import 'package:validatorless/validatorless.dart';
 
+import '../services/api_service.dart';
+
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
@@ -181,13 +183,41 @@ class _TelaLoginState extends State<TelaLogin> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               final formValid = _formKey.currentState?.validate() ?? false;
                               if (formValid) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const TelaPrincipal()),
-                                );
+                                try {
+                                  final result = await ApiService.loginDemo(
+                                    _emailController.text,
+                                    _senhaController.text,
+                                  );
+
+                                  if (!mounted) return;
+
+                                  if (result['success']) {
+                                    // Login successful
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const TelaPrincipal()),
+                                    );
+                                  } else {
+                                    // Show error message
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(result['message'] ?? 'Erro ao fazer login'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  // Show error message for exceptions
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Erro: $e'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               }
                             },
                             child: const Center(

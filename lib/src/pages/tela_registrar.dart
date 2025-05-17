@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
 import 'package:maga_app/src/pages/tela_confirmacao.dart';
 import 'package:validatorless/validatorless.dart';
+import 'package:maga_app/src/services/auth_service.dart';
 
 class TelaRegistrar extends StatefulWidget {
   const TelaRegistrar({super.key});
@@ -16,6 +17,9 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
   final _nomeController = TextEditingController();
   final _telefoneController = TextEditingController();
   final _senhaController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -26,6 +30,64 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
     super.dispose();
   }
 
+  Future<void> _registrarUsuario() async {
+    final formValid = _formKey.currentState?.validate() ?? false;
+    if (!formValid) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Limpa os dados antes de enviar
+      final email = _emailController.text.trim();
+      final nome = _nomeController.text.trim();
+      final telefone = _telefoneController.text.trim();
+      final senha = _senhaController.text;
+
+      final sucesso = await _authService.register(
+        email,
+        nome,
+        telefone,
+        senha,
+      );
+
+      if (sucesso) {
+        // Se o registro foi bem sucedido
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TelaConfirmacao(
+                proximaTela: TelaPrincipal(),
+              ),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao registrar usuário. Tente novamente.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +95,7 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF0F59F7), Color(0xFF020e26)], // Azul gradiente
+            colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -170,29 +232,21 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
                           const SizedBox(height: 10),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF063FBA), // Cor do botão alterada
+                              backgroundColor: const Color(0xFF063FBA),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            onPressed: () {
-                              final formValid = _formKey.currentState?.validate() ?? false;
-                              if (formValid) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const TelaConfirmacao(
-                                      proximaTela: TelaPrincipal(),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: const Center(
-                              child: Text("Registrar"),
-                            ),
+                            onPressed: _isLoading ? null : _registrarUsuario,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                  )
+                                : const Center(child: Text("Registrar")),
                           ),
                           const SizedBox(height: 10),
                           const Center(
@@ -210,7 +264,7 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(color: Colors.grey.shade300),
+                                side: BorderSide(color: Colors.grey),
                               ),
                             ),
                             onPressed: () {

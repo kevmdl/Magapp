@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_formulario.dart';
 import 'package:maga_app/src/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -17,17 +18,12 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   // Controlador para o campo de texto da mensagem
   final TextEditingController _messageController = TextEditingController();
 
-  // ID do usuário atual (obtido do login)
-  String _currentUserId = 'demo_id'; // Valor padrão para demonstração
-
-  // Lista de mensagens
+  // ID do admin
+  String? _chatId; // ID do chat atual
+  String? _currentUserId;
   List<Map<String, dynamic>> _messages = [];
-
-  // ID do assistente (destinatário fixo para este exemplo)
-  final String _assistantId = '1'; // ID do assistente no backend
-
-  // Flag para indicar carregamento
   bool _isLoading = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -41,108 +37,145 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
 
     // Carregar o ID do usuário atual e as mensagens quando a tela for iniciada
-    _loadCurrentUser();
-    _loadMessages();
+    _initializeChat();
   }
 
-  // Carregar informações do usuário atual
-  Future<void> _loadCurrentUser() async {
-    final userData = await ApiService.getUsuarioAtual();
-    if (userData != null && userData['id'] != null) {
-      setState(() {
-        _currentUserId = userData['id'].toString();
-      });
+  Future<void> _initializeChat() async {
+    setState(() {
+      _isLoading = true;
+      _messages = [];
+    });
+    
+    try {
+      // Get current user ID from shared preferences or auth service
+      final prefs = await SharedPreferences.getInstance();
+      _currentUserId = prefs.getString('user_id');
+      
+      if (_currentUserId == null) {
+        throw Exception('Usuário não está logado');
+      }
+
+      print('Inicializando chat para usuário: $_currentUserId');
+      
+      final chatResponse = await ApiService.criarOuBuscarChat(
+        userId: _currentUserId!,
+        adminId: '1',
+      );
+      
+      if (chatResponse != null) {
+        _chatId = chatResponse['idchat'].toString();
+        print('Chat inicializado - chatId: $_chatId, userId: $_currentUserId');
+        await _loadMessages();
+      } else {
+        throw Exception('Não foi possível inicializar o chat');
+      }
+    } catch (e) {
+      print('Erro na inicialização do chat: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao inicializar chat: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  // Carregar as mensagens do chat
   Future<void> _loadMessages() async {
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
-      final messages = await ApiService.getMensagens(_currentUserId, _assistantId);
-      setState(() {
-        _messages = messages;
-      });
+      if (_chatId == null) return;
+
+      print('Carregando mensagens do chat $_chatId...'); // Debug log
+      final messages = await ApiService.getMensagensPorChat(_chatId!);
+      print('Mensagens carregadas: ${messages.length}'); // Debug log
+
+      if (mounted) {
+        setState(() {
+          _messages = messages;
+          print('Estado atualizado com ${_messages.length} mensagens'); // Debug log
+        });
+        Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      }
     } catch (e) {
-      // Em caso de erro, mostrar algumas mensagens de teste
-      setState(() {
-        _messages = [
-          {
-            'id': 1,
-            'remetente_id': _currentUserId,
-            'destinatario_id': _assistantId,
-            'conteudo': 'Olá, pode me tirar uma dúvida?',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
-          },
-          {
-            'id': 2,
-            'remetente_id': _assistantId,
-            'destinatario_id': _currentUserId,
-            'conteudo': 'Claro, estou à disposição!',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 4)).toIso8601String(),
-          },
-        ];
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      print('Erro ao carregar mensagens: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar mensagens: $e')),
+        );
+      }
     }
   }
 
   // Enviar uma nova mensagem
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _chatId == null || _currentUserId == null) {
+      print('Validação falhou: texto=${text.isEmpty}, chatId=$_chatId, userId=$_currentUserId');
+      return;
+    }
 
-    // Limpar o campo de texto
     _messageController.clear();
 
-    // Criar uma mensagem temporária para exibição imediata
     final tempMessage = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'remetente_id': _currentUserId,
-      'destinatario_id': _assistantId,
-      'conteudo': text,
-      'timestamp': DateTime.now().toIso8601String(),
+      'chat_id': _chatId,
+      'sender_id': _currentUserId,
+      'content': text,
+      'created_at': DateTime.now().toIso8601String(),
     };
 
-    // Adicionar a mensagem à lista
     setState(() {
       _messages.add(tempMessage);
     });
+    _scrollToBottom();
 
-    // Enviar a mensagem para o backend
     try {
+      print('Enviando mensagem para chat $_chatId');
       final success = await ApiService.enviarMensagem(
-        remetenteId: _currentUserId,
-        destinatarioId: _assistantId,
+        chatId: _chatId!,
+        senderId: _currentUserId!,
         conteudo: text,
       );
-
-      if (success) {
-        // Recarregar as mensagens para obter a versão correta do backend
-        // Em um ambiente de produção, você poderia implementar WebSockets para
-        // atualização em tempo real em vez de recarregar
-        _loadMessages();
-        
-        // Removida a notificação de sucesso conforme solicitado
+      
+      if (!success && mounted) {
+        setState(() {
+          _messages.removeWhere((msg) => msg['id'] == tempMessage['id']);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao enviar mensagem. Tente novamente.')),
+        );
+      } else {
+        await _loadMessages(); // Reload messages after successful send
       }
     } catch (e) {
-      // Exibir erro (opcional)
+      print('Erro ao enviar mensagem: $e');
       if (mounted) {
+        setState(() {
+          _messages.removeWhere((msg) => msg['id'] == tempMessage['id']);
+        });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar mensagem: $e')),
+          SnackBar(content: Text('Erro: $e')),
         );
       }
     }
   }
 
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+
   @override
   void dispose() {
+    _scrollController.dispose();
     _controller.dispose();
     _messageController.dispose();
     super.dispose();
@@ -220,15 +253,19 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
+                        controller: _scrollController,
                         padding: const EdgeInsets.all(8),
                         itemCount: _messages.length,
                         itemBuilder: (context, index) {
                           final message = _messages[index];
-                          final isUser = message['remetente_id'] == _currentUserId;
-
+                          // Use sender_id instead of Usuario_idusuario
+                          final isUser = message['sender_id'].toString() == _currentUserId;
+                          
                           return ChatBubble(
+                            key: ValueKey(message['id']),
                             isUser: isUser,
-                            text: message['conteudo'] ?? '',
+                            // Use content instead of conteudo
+                            text: message['content'] ?? '',
                           );
                         },
                       ),

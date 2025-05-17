@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "897605102368",
+    "project_id": "magaapp-455ff",
+    "storage_bucket": "magaapp-455ff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897605102368:android:8a1c81bafc9b2525380545",
+        "android_client_info": {
+          "package_name": "com.example.maga_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2TWI4i5zgotd6K3_IDoWxGSvlhk6xd-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
