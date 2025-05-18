@@ -5,6 +5,8 @@ import 'package:maga_app/src/pages/sup_chatscreen.dart';
 import 'package:maga_app/src/pages/tela_pedido.dart'; 
 import 'package:maga_app/src/pages/tela_perfil.dart';
 import 'package:maga_app/src/pages/tela_clientes.dart';
+import 'package:maga_app/src/pages/tela_pedido_adm.dart'; // First import the admin screen
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -13,8 +15,28 @@ void main() {
   ));
 }
 
-class TelaPrincipal extends StatelessWidget {
+class TelaPrincipal extends StatefulWidget {
   const TelaPrincipal({super.key});
+
+  @override
+  State<TelaPrincipal> createState() => _TelaPrincipalState();
+}
+
+class _TelaPrincipalState extends State<TelaPrincipal> {
+  int _userPermission = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPermission();
+  }
+
+  Future<void> _loadUserPermission() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userPermission = prefs.getInt('user_permission') ?? 0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,27 +93,28 @@ class TelaPrincipal extends StatelessWidget {
                               );
                             },
                           ),
-                          PopupMenuItem(
-                            child: const Row(
-                              children: [
-                                CircleAvatar(
-                                  backgroundColor: Color(0xFF063FBA),
-                                  child: Icon(Icons.admin_panel_settings, color: Colors.white),
-                                ),
-                                SizedBox(width: 10),
-                                Text("Área Administrativa"),
-                              ],
+                          if (_userPermission == 1) // Only show if user has admin permission
+                            PopupMenuItem(
+                              child: const Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Color(0xFF063FBA),
+                                    child: Icon(Icons.admin_panel_settings, color: Colors.white),
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text("Área Administrativa"),
+                                ],
+                              ),
+                              onTap: () {
+                                Future.delayed(
+                                  const Duration(seconds: 0),
+                                  () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const TelaClientes()),
+                                  ),
+                                );
+                              },
                             ),
-                            onTap: () {
-                              Future.delayed(
-                                const Duration(seconds: 0),
-                                () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const TelaClientes()),
-                                ),
-                              );
-                            },
-                          ),
                           PopupMenuItem(
                             child: const Row(
                               children: [
@@ -136,7 +159,11 @@ class TelaPrincipal extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const TelaPedido()),
+                            MaterialPageRoute(
+                              builder: (context) => _userPermission == 1 
+                                ? const TelaPedidoAdmin() 
+                                : const TelaPedido(),
+                            ),
                           );
                         },
                         child: _buildIconButton(Icons.list, "Pedidos"),

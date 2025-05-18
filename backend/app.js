@@ -6,6 +6,8 @@ require("dotenv").config();
 const db = require("./config/db");
 const authRoutes = require("./routes/auth"); // Add this line
 const chatRoutes = require('./routes/chat');
+const pedidosRoutes = require('./routes/pedidos');
+const usuariosRoutes = require('./routes/usuarios');
 
 // Teste de conexão com o banco
 db.execute('SELECT 1')
@@ -27,6 +29,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 
 app.post("/login", (req, res) => {
     console.log(req.body);

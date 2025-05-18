@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_login.dart';
 import 'package:maga_app/src/pages/tela_recuperacao.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../services/api_service.dart';
 
 class TelaPerfil extends StatefulWidget {
   const TelaPerfil({super.key});
@@ -21,6 +24,78 @@ class _TelaPerfilState extends State<TelaPerfil> {
     _controllers['Nome:'] = TextEditingController(text: displayName);
     _controllers['Email:'] = TextEditingController(text: displayEmail);
     _controllers['Celular:'] = TextEditingController(text: '** *****-1234');
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userData = jsonDecode(prefs.getString('usuario_dados') ?? '{}');
+
+      setState(() {
+        displayName = userData['nome'] ?? 'Nome Usuário';
+        displayEmail = userData['email'] ?? 'nomeusuario@example.com';
+        
+        _controllers['Nome:']?.text = displayName;
+        _controllers['Email:']?.text = displayEmail;
+        _controllers['Celular:']?.text = userData['telefone'] ?? '** *****-1234';
+      });
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
+
+  Future<void> _updateField(String label, String value) async {
+    String field;
+    Map<String, dynamic> updateData = {};
+
+    switch (label) {
+      case 'Nome:':
+        field = 'nome';
+        updateData['nome'] = value;
+        break;
+      case 'Email:':
+        field = 'email';
+        updateData['email'] = value;
+        break;
+      case 'Celular:':
+        field = 'telefone';
+        updateData['telefone'] = value;
+        break;
+      default:
+        return;
+    }
+
+    try {
+      final success = await ApiService.updateUserProfile(updateData);
+
+      if (success) {
+        setState(() {
+          if (label == 'Nome:') displayName = value;
+          if (label == 'Email:') displayEmail = value;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$field atualizado com sucesso'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        throw Exception('Falha ao atualizar');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao atualizar $field: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -219,11 +294,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
                   setState(() {
                     _editingMap[label] = !_editingMap[label]!;
                     if (!_editingMap[label]!) {
-                      if (label == 'Nome:') {
-                        displayName = _controllers[label]!.text;
-                      } else if (label == 'Email:') {
-                        displayEmail = _controllers[label]!.text;
-                      }
+                      _updateField(label, _controllers[label]!.text);
                     }
                   });
                 },

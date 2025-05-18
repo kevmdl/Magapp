@@ -228,4 +228,35 @@ router.post('/criar', async (req, res) => {
   }
 });
 
+// Nova rota para buscar clientes com chats
+router.get('/clients-with-chats/:adminId', async (req, res) => {
+  const { adminId } = req.params;
+  
+  try {
+    const [clients] = await db.execute(`
+      SELECT DISTINCT u.*, c.idchat as chat_id
+      FROM usuarios u
+      INNER JOIN participantes p ON u.idusuarios = p.Usuario_idusuario
+      INNER JOIN chat c ON p.chat_idchat = c.idchat
+      WHERE c.idchat IN (
+        SELECT chat_idchat 
+        FROM participantes 
+        WHERE Usuario_idusuario = ?
+      )
+      AND u.idusuarios != ?
+    `, [adminId, adminId]);
+
+    res.json({
+      success: true,
+      data: clients
+    });
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching clients'
+    });
+  }
+});
+
 module.exports = router;

@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/client_model.dart';
+
 class ApiService {
   // Determina a URL base baseada na plataforma em que o app está sendo executado
   static String get _baseUrl {
@@ -365,7 +367,129 @@ class ApiService {
   static Future<void> saveUserData(Map<String, dynamic> userData) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_id', userData['idusuarios'].toString());
+    await prefs.setInt('user_permission', userData['permissao'] ?? 0);
     await prefs.setString('usuario_dados', jsonEncode(userData));
-    print('Dados do usuário salvos: ${userData['idusuarios']}');
   }
+
+  static Future<List<ClientModel>> getClientsWithChats() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/api/chat/clients-with-chats/1'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['data'] as List)
+            .map((json) => ClientModel.fromJson(json))
+            .toList();
+      }
+      
+      throw Exception('Failed to load clients');
+    } catch (e) {
+      print('Error fetching clients: $e');
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllPedidos() async {
+  try {
+    print('Fetching all pedidos...'); // Debug log
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/pedidos'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Response status: ${response.statusCode}'); // Debug log
+    print('Response body: ${response.body}'); // Debug log
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data'] ?? []);
+    }
+    
+    throw Exception('Failed to load pedidos: ${response.statusCode}');
+  } catch (e) {
+    print('Error fetching pedidos: $e'); // Debug log
+    return [];
+  }
+}
+
+  static Future<bool> updatePedidoStatus(String pedidoId, int concluido) async {
+  try {
+    print('Updating pedido $pedidoId to status $concluido'); // Debug log
+    final response = await http.put(
+      Uri.parse('$_baseUrl/api/pedidos/$pedidoId/status'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'concluido': concluido,
+      }),
+    );
+
+    print('Response status: ${response.statusCode}'); // Debug log
+    print('Response body: ${response.body}'); // Debug log
+
+    return response.statusCode == 200;
+  } catch (e) {
+    print('Error updating pedido status: $e'); // Debug log
+    return false;
+  }
+}
+
+  static Future<bool> createPedido(Map<String, dynamic> pedidoData) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/api/pedidos'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $_authToken',
+      },
+      body: jsonEncode(pedidoData),
+    );
+
+    if (response.statusCode == 201) {
+      return true;
+    }
+    throw Exception('Falha ao criar pedido');
+  } catch (e) {
+    print('Erro ao criar pedido: $e');
+    return false;
+  }
+}
+
+static Future<bool> updateUserProfile(Map<String, dynamic> userData) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('user_id');
+
+    if (userId == null) {
+      throw Exception('User ID not found');
+    }
+
+    final response = await http.put(
+      Uri.parse('$_baseUrl/api/usuarios/$userId'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(userData),
+    );
+
+    if (response.statusCode == 200) {
+      // Update local storage
+      final currentUserData = jsonDecode(prefs.getString('usuario_dados') ?? '{}');
+      final updatedUserData = {...currentUserData, ...userData};
+      await prefs.setString('usuario_dados', jsonEncode(updatedUserData));
+      return true;
+    }
+    
+    return false;
+  } catch (e) {
+    print('Error updating user profile: $e');
+    return false;
+  }
+}
 }

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:validatorless/validatorless.dart';
+
+import '../services/api_service.dart';
 
 class TelaFormulario extends StatefulWidget {
   const TelaFormulario({super.key});
@@ -15,6 +18,8 @@ class _TelaFormularioState extends State<TelaFormulario> {
   final _placaController = TextEditingController();
   final _renavamController = TextEditingController();
   final _chassiController = TextEditingController();
+  final _modeloController = TextEditingController();
+  final _corController = TextEditingController();
 
   @override
   void dispose() {
@@ -23,6 +28,8 @@ class _TelaFormularioState extends State<TelaFormulario> {
     _placaController.dispose();
     _renavamController.dispose();
     _chassiController.dispose();
+    _modeloController.dispose();
+    _corController.dispose();
     super.dispose();
   }
 
@@ -98,12 +105,15 @@ class _TelaFormularioState extends State<TelaFormulario> {
                               const Text("CPF/CNPJ"),
                               TextFormField(
                                 controller: _cpfController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                 validator: Validatorless.multiple([
-                                  Validatorless.required('CPF/CNPJ é obrigatório'),
+                                  Validatorless.required('CPF é obrigatório'),
                                   Validatorless.cpf('CPF inválido'),
+                                  Validatorless.number('Apenas números são permitidos'),
                                 ]),
                                 decoration: InputDecoration(
-                                  hintText: "Digite o CPF ou CNPJ",
+                                  hintText: "Digite o CPF (apenas números)",
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -113,9 +123,16 @@ class _TelaFormularioState extends State<TelaFormulario> {
                               const Text("Placa"),
                               TextFormField(
                                 controller: _placaController,
-                                validator: Validatorless.required('Placa é obrigatória'),
+                                textCapitalization: TextCapitalization.characters,
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Placa é obrigatória'),
+                                  Validatorless.regex(
+                                    RegExp(r'^[A-Z]{3}[0-9][A-Z][0-9]{2}$'),
+                                    'Formato inválido. Use o padrão ABC1D23'
+                                  ),
+                                ]),
                                 decoration: InputDecoration(
-                                  hintText: "Digite a placa",
+                                  hintText: "Digite a placa (ABC1D23)",
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
@@ -125,25 +142,65 @@ class _TelaFormularioState extends State<TelaFormulario> {
                               const Text("Renavam"),
                               TextFormField(
                                 controller: _renavamController,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Renavam é obrigatório'),
+                                  Validatorless.number('Apenas números são permitidos'),
+                                  Validatorless.min(9, 'Renavam deve ter no mínimo 9 dígitos'),
+                                  Validatorless.max(11, 'Renavam deve ter no máximo 11 dígitos'),
+                                ]),
                                 decoration: InputDecoration(
-                                  hintText: "Digite o Renavam",
+                                  hintText: "Digite o Renavam (9 a 11 dígitos)",
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                validator: Validatorless.required('Renavam é obrigatório'),
                               ),
                               const SizedBox(height: 10),
                               const Text("Chassi"),
                               TextFormField(
                                 controller: _chassiController,
+                                textCapitalization: TextCapitalization.characters,
+                                validator: Validatorless.multiple([
+                                  Validatorless.required('Chassi é obrigatório'),
+                                  Validatorless.regex(
+                                    RegExp(r'^[A-HJ-NPR-Z0-9]{17}$'),
+                                    'Chassi deve ter 17 caracteres válidos'
+                                  ),
+                                ]),
                                 decoration: InputDecoration(
-                                  hintText: "Digite o Chassi",
+                                  hintText: "Digite o Chassi (17 caracteres)",
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                validator: Validatorless.required('Chassi é obrigatório'),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text("Modelo"),
+                              TextFormField(
+                                controller: _modeloController,
+                                textCapitalization: TextCapitalization.words,
+                                validator: Validatorless.required('Modelo é obrigatório'),
+                                decoration: InputDecoration(
+                                  hintText: "Digite o modelo do veículo",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text("Cor"),
+                              TextFormField(
+                                controller: _corController,
+                                textCapitalization: TextCapitalization.words,
+                                validator: Validatorless.required('Cor é obrigatória'),
+                                decoration: InputDecoration(
+                                  hintText: "Digite a cor do veículo",
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 10),
                               ElevatedButton(
@@ -155,39 +212,72 @@ class _TelaFormularioState extends State<TelaFormulario> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   final formValid = _formKey.currentState?.validate() ?? false;
                                   if (formValid) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(15),
-                                          ),
-                                          title: const Row(
-                                            children: [
-                                              Icon(Icons.check_circle, color: Color(0xFF063FBA)),
-                                              SizedBox(width: 10),
-                                              Text("Sucesso!"),
-                                            ],
-                                          ),
-                                          content: const Text("Pedido feito com sucesso!"),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: const Text(
-                                                "OK",
-                                                style: TextStyle(color: Color(0xFF063FBA)),
+                                    try {
+                                      final pedidoData = {
+                                        'nome_cliente': _nomeController.text,
+                                        'cpf': _cpfController.text,
+                                        'placa': _placaController.text,
+                                        'renavam': _renavamController.text,
+                                        'chassi': _chassiController.text,
+                                        'modelo': _modeloController.text,
+                                        'cor': _corController.text,
+                                        'concluido': 0, // Estado inicial: não concluído
+                                      };
+
+                                      final success = await ApiService.createPedido(pedidoData);
+
+                                      if (!mounted) return;
+
+                                      if (success) {
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(15),
                                               ),
-                                            ),
-                                          ],
+                                              title: const Row(
+                                                children: [
+                                                  Icon(Icons.check_circle, color: Color(0xFF063FBA)),
+                                                  SizedBox(width: 10),
+                                                  Text("Sucesso!"),
+                                                ],
+                                              ),
+                                              content: const Text("Pedido feito com sucesso!"),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.of(context).pop(); // Fechar diálogo
+                                                    Navigator.of(context).pop(); // Voltar para a tela anterior
+                                                  },
+                                                  child: const Text(
+                                                    "OK",
+                                                    style: TextStyle(color: Color(0xFF063FBA)),
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
                                         );
-                                      },
-                                    );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Erro ao criar pedido. Tente novamente.'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Erro: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
                                   }
                                 },
                                 child: const Center(
