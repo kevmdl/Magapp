@@ -17,16 +17,16 @@ router.post('/register', async (req, res) => {
         );
 
         if (existingUsers.length > 0) {
-            return res.status(400).json({ message: 'Email já cadastrado' });
+            return res.status(400).json({
+                success: false,
+                message: 'Email já cadastrado'
+            });
         }
 
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(senha, SALT_ROUNDS);
-
-        // Insert new user with hashed password
+        // Insert new user with plain password
         const [result] = await db.execute(
             'INSERT INTO usuarios (email, nome, telefone, senha, permissao) VALUES (?, ?, ?, ?, 0)',
-            [email, nome, telefone, hashedPassword]
+            [email, nome, telefone, senha]
         );
 
         res.status(201).json({
@@ -36,9 +36,9 @@ router.post('/register', async (req, res) => {
         });
     } catch (error) {
         console.error('Erro ao registrar usuário:', error);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Erro interno do servidor' 
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao registrar usuário'
         });
     }
 });
