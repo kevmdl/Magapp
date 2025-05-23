@@ -35,8 +35,7 @@ class _TelaClientesState extends State<TelaClientes> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
+    return Scaffold(      body: Stack(
         children: [
           Container(
             width: double.infinity,
@@ -70,18 +69,34 @@ class _TelaClientesState extends State<TelaClientes> {
                         topLeft: Radius.circular(30),
                         topRight: Radius.circular(30),
                       ),
-                    ),
-                    child: _isLoading
+                    ),                    child: _isLoading
                         ? const Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            itemCount: _clients.length,
-                            itemBuilder: (context, index) {
-                              final client = _clients[index];
-                              return ClientCard(
-                                client: client,
-                                onEdit: () => _editarCliente(context, client),
-                              );
-                            },
+                        : Column(
+                            children: [
+                              // Lista de clientes
+                              Expanded(
+                                child: _clients.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      'Nenhum cliente encontrado',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                  itemCount: _clients.length,
+                                  itemBuilder: (context, index) {
+                                    final client = _clients[index];
+                                    return ClientCard(
+                                      client: client,
+                                      onEdit: () => _editarCliente(context, client),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                   ),
                 ),
@@ -98,10 +113,111 @@ class _TelaClientesState extends State<TelaClientes> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF063FBA),
+        onPressed: _loadClients,
+        child: const Icon(Icons.refresh, color: Colors.white),
+      ),
     );
   }
-
   void _editarCliente(BuildContext context, ClientModel client) {
-    // Implement edit logic
+    // Controladores para os campos do formulário
+    final nameController = TextEditingController(text: client.name);
+    final emailController = TextEditingController(text: client.email);
+    final phoneController = TextEditingController(text: client.phone ?? '');
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Editar Cliente'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Telefone',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              // Validar os campos
+              if (nameController.text.isEmpty || emailController.text.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Preencha todos os campos obrigatórios'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+              
+              // Montar o objeto de atualização
+              final updateData = {
+                'nome': nameController.text,
+                'email': emailController.text,
+                'telefone': phoneController.text,
+              };
+              
+              // Fechar o diálogo
+              Navigator.pop(context);
+              
+              try {
+                // Chamar a API para atualizar o cliente
+                final success = await ApiService.updateClient(client.id, updateData);
+                
+                if (success) {
+                  // Recarregar a lista
+                  _loadClients();
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Cliente atualizado com sucesso'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                } else {
+                  throw Exception('Falha ao atualizar cliente');
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Erro ao atualizar cliente: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
   }
 }

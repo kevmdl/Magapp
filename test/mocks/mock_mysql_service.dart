@@ -23,19 +23,19 @@ class MockMySqlService extends Mock implements MySqlService {
 
   // Simula conexão com o banco de dados
   static Future<bool> getConnection() async {
-    await Future.delayed(Duration(milliseconds: 100)); // Simula atraso de rede
+    await Future.delayed(const Duration(milliseconds: 100)); // Simula atraso de rede
     return true;
   }
 
   // Simula busca de usuários
   static Future<List<Map<String, dynamic>>> getUsers() async {
-    await Future.delayed(Duration(milliseconds: 100)); // Simula atraso de rede
+    await Future.delayed(const Duration(milliseconds: 100)); // Simula atraso de rede
     return List.from(_mockUsers); // Retorna uma cópia para evitar modificações externas
   }
 
   // Simula inserção de usuário
   static Future<int> insertUser(String nome, String email, String senha) async {
-    await Future.delayed(Duration(milliseconds: 100)); // Simula atraso de rede
+    await Future.delayed(const Duration(milliseconds: 100)); // Simula atraso de rede
     
     // Verifica se o email já existe
     if (_mockUsers.any((user) => user['email'] == email)) {
@@ -55,7 +55,7 @@ class MockMySqlService extends Mock implements MySqlService {
 
   // Simula atualização de usuário
   static Future<int> updateUser(int id, String nome, String email) async {
-    await Future.delayed(Duration(milliseconds: 100)); // Simula atraso de rede
+    await Future.delayed(const Duration(milliseconds: 100)); // Simula atraso de rede
     
     int index = _mockUsers.indexWhere((user) => user['id'] == id);
     if (index == -1) {
@@ -83,7 +83,7 @@ class MockMySqlService extends Mock implements MySqlService {
 
   // Simula exclusão de usuário
   static Future<int> deleteUser(int id) async {
-    await Future.delayed(Duration(milliseconds: 100)); // Simula atraso de rede
+    await Future.delayed(const Duration(milliseconds: 100)); // Simula atraso de rede
     
     int initialLength = _mockUsers.length;
     _mockUsers.removeWhere((user) => user['id'] == id);

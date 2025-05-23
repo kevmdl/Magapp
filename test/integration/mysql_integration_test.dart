@@ -13,9 +13,9 @@ void main() {
     int? testUserId;
     
     // Dados de teste
-    final testUserName = 'Usuário de Teste';
+    const testUserName = 'Usuário de Teste';
     final testUserEmail = 'teste_${DateTime.now().millisecondsSinceEpoch}@example.com';
-    final testUserPassword = 'senha123';
+    const testUserPassword = 'senha123';
     
     test('Deve conectar ao banco de dados MySQL', () async {
       var connection = await MySqlService.getConnection();

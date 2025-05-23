@@ -1,0 +1,2 @@
+C:/Users/Kevim/Magapp/android/app/.cxx/Debug/bj5a4354/x86/CMakeFiles/edit_cache.dir
+C:/Users/Kevim/Magapp/android/app/.cxx/Debug/bj5a4354/x86/CMakeFiles/rebuild_cache.dir

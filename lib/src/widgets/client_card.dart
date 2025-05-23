@@ -35,12 +35,13 @@ class ClientCard extends StatelessWidget {
         title: Text(
           client.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
+        ),        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('ID: #${client.id}'),
             Text(client.email),
+            if (client.phone != null && client.phone!.isNotEmpty)
+              Text(client.phone!),
           ],
         ),
         trailing: Row(

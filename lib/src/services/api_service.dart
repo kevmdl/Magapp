@@ -105,13 +105,14 @@ class ApiService {
       return null;
     }
   }
-
   // Método para fazer logout
   static Future<void> logout() async {
     _authToken = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('usuario_dados');
+    await prefs.remove('user_permission'); // Remover permissão
+    await prefs.remove('user_id'); // Remover ID do usuário
   }
 
   // MÉTODOS DE CHAT
@@ -492,4 +493,36 @@ static Future<bool> updateUserProfile(Map<String, dynamic> userData) async {
     return false;
   }
 }
+
+// Método para atualizar informações de um cliente
+  static Future<bool> updateClient(int clientId, Map<String, dynamic> clientData) async {
+    try {
+      // Verificar se existe um token de autenticação
+      if (_authToken == null) {
+        await verificarToken();
+      }
+      
+      if (_authToken == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
+      
+      final response = await http.put(
+        Uri.parse('$_baseUrl/api/usuarios/$clientId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
+        body: jsonEncode(clientData),
+      );
+      
+      if (response.statusCode == 200) {
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print('Erro ao atualizar cliente: $e');
+      return false;
+    }
+  }
 }

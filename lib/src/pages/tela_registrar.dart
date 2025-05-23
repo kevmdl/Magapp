@@ -264,7 +264,7 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                side: BorderSide(color: Colors.grey),
+                                side: const BorderSide(color: Colors.grey),
                               ),
                             ),
                             onPressed: () {

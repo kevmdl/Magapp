@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:maga_app/src/pages/tela_principal.dart';
+import 'package:maga_app/src/pages/tela_dashboard_admin.dart';
+import 'package:maga_app/src/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   final Widget nextScreen;
@@ -14,8 +18,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late double _progressValue;
-  
-  @override
+    @override
   void initState() {
     super.initState();
     
@@ -38,15 +41,68 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           _progressValue += 0.01; // Incremento menor para movimento mais suave
         } else {
           timer.cancel();
-          // Aguardar um momento antes de navegar
-          Future.delayed(const Duration(milliseconds: 500), () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => widget.nextScreen)
-            );
-          });
+          // Verificar login e direcionar para a tela apropriada
+          _verificarLoginENavegar();
         }
       });
     });
+  }
+    Future<void> _verificarLoginENavegar() async {
+    try {
+      final temToken = await ApiService.verificarToken();
+      
+      if (temToken) {
+        // Se o usuário estiver logado, recuperar dados e verificar permissão
+        final userData = await ApiService.getUsuarioAtual();
+        if (userData != null) {
+          // Verificar permissão diretamente dos dados do usuário, mais confiável
+          final permissao = userData['permissao'] ?? 0;
+          
+          if (permissao == 1) {
+            // Admin - vai para dashboard admin
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const TelaDashboardAdmin())
+            );
+            return;
+          } else {
+            // Usuário normal - vai para tela principal
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const TelaPrincipal())
+            );
+            return;
+          }
+        }
+        
+        // Fallback: usar SharedPreferences se não for possível obter dados do usuário
+        final prefs = await SharedPreferences.getInstance();
+        final permissao = prefs.getInt('user_permission') ?? 0;
+        
+        if (permissao == 1) {
+          // Admin - vai para dashboard admin
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const TelaDashboardAdmin())
+          );
+        } else {
+          // Usuário normal - vai para tela principal
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const TelaPrincipal())
+          );
+        }
+      } else {
+        // Usuário não logado - vai para tela de login
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => widget.nextScreen)
+        );
+      }
+    } catch (e) {
+      print('Erro ao verificar login: $e');
+      // Em caso de erro, continua para a próxima tela
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => widget.nextScreen)
+        );
+      });
+    }
   }
   
   @override

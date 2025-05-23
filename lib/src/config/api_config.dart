@@ -1,6 +1,5 @@
 class ApiConfig {
-  // Get your computer's IP address
-  static const String baseUrl = 'http://192.168.1.12:3000'; // Replace xxx with your IP
+  static const String baseUrl = 'http://10.0.2.2:3000'; // Para emulador Android
   
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';

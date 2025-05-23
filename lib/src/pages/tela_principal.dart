@@ -4,8 +4,7 @@ import 'package:maga_app/src/pages/tela_login.dart';
 import 'package:maga_app/src/pages/sup_chatscreen.dart'; 
 import 'package:maga_app/src/pages/tela_pedido.dart'; 
 import 'package:maga_app/src/pages/tela_perfil.dart';
-import 'package:maga_app/src/pages/tela_clientes.dart';
-import 'package:maga_app/src/pages/tela_pedido_adm.dart'; // First import the admin screen
+import 'package:maga_app/src/pages/tela_dashboard_admin.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -104,13 +103,12 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                                   SizedBox(width: 10),
                                   Text("Área Administrativa"),
                                 ],
-                              ),
-                              onTap: () {
+                              ),                              onTap: () {
                                 Future.delayed(
                                   const Duration(seconds: 0),
                                   () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => const TelaClientes()),
+                                    MaterialPageRoute(builder: (context) => const TelaDashboardAdmin()),
                                   ),
                                 );
                               },
@@ -156,12 +154,11 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                         child: _buildIconButton(Icons.person, "Contato"),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () {                          Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => _userPermission == 1 
-                                ? const TelaPedidoAdmin() 
+                                ? const TelaDashboardAdmin() 
                                 : const TelaPedido(),
                             ),
                           );
@@ -187,12 +184,26 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                 child: Padding(
                   padding: const EdgeInsets.all(10.0),
                   child: Column(
-                    children: [
-                      _buildCard(Icons.person, "Contato", "No contato você vai poder falar diretamente com um funcionário, e fazer um pedido"),
-                      _buildCardWithImage("IA", "Tire suas dúvidas de maneira mais rápida sem ter que esperar um de nossos atendentes"),
-                      _buildCard(Icons.list, "Pedidos", "Nesta opção você poderá olhar seus pedidos concluídos"),
-                      _buildCard(Icons.description, "Documento", "Essa função serve para enviar o arquivo para verificação."),
-                      _buildCard(Icons.assignment, "Formulário", "No formulário você pode enviar um pedido para o estabelecimento"),
+                    children: [                      _buildCard(Icons.person, "Contato", "No contato você vai poder falar diretamente com um funcionário, e fazer um pedido"),
+                      _buildCardWithImage("IA", "Tire suas dúvidas de maneira mais rápida sem ter que esperar um de nossos atendentes"),                      _buildCard(Icons.list, "Pedidos", "Nesta opção você poderá olhar seus pedidos concluídos", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => _userPermission == 1 
+                              ? const TelaDashboardAdmin() 
+                              : const TelaPedido(),
+                          ),
+                        );
+                      }),                      _buildCard(Icons.description, "Documento", "Função desativada", null),
+                      _buildCard(Icons.assignment, "Formulário", "No formulário você pode enviar um pedido para o estabelecimento", () {
+                        if (_userPermission == 1) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TelaDashboardAdmin()),
+                          );
+                        }
+                        // Para usuários normais, adicionar navegação futura aqui
+                      }),
                     ],
                   ),
                 ),

@@ -53,82 +53,128 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(widget.client.name),
-            Text(
-              widget.client.email,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF0F59F7),
-      ),
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(8),
-                    itemCount: _messages.length,
-                    itemBuilder: (context, index) {
-                      final message = _messages[index];
-                      final isAdmin = message['sender_id'].toString() == '1';
-                      
-                      return Align(
-                        alignment: isAdmin 
-                            ? Alignment.centerRight 
-                            : Alignment.centerLeft,
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          margin: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isAdmin 
-                                ? const Color(0xFF0F59F7)
-                                : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Text(
-                            message['content'] ?? '',
-                            style: TextStyle(
-                              color: isAdmin ? Colors.white : Colors.black,
-                            ),
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 50),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.client.name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        widget.client.email,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: _isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : ListView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.all(8),
+                                  itemCount: _messages.length,                                  itemBuilder: (context, index) {
+                                    final message = _messages[index];
+                                    final isAdmin = message['sender_id'].toString() == '1';
+                                    
+                                    return Align(
+                                      alignment: isAdmin 
+                                          ? Alignment.centerRight 
+                                          : Alignment.centerLeft,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        margin: const EdgeInsets.symmetric(
+                                          vertical: 4,
+                                          horizontal: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isAdmin 
+                                              ? const Color(0xFF0F59F7)
+                                              : Colors.grey[300],
+                                          borderRadius: BorderRadius.circular(15),
+                                        ),
+                                        child: Text(
+                                          message['content'] ?? '',
+                                          style: TextStyle(
+                                            color: isAdmin ? Colors.white : Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _messageController,
+                                  decoration: const InputDecoration(
+                                    hintText: 'Digite sua mensagem...',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.send),
+                                color: const Color(0xFF0F59F7),
+                                onPressed: _sendMessage,
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Digite sua mensagem...',
-                      border: OutlineInputBorder(),
+                      ],
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  color: const Color(0xFF0F59F7),
-                  onPressed: _sendMessage,
-                ),
               ],
+            ),
+          ),
+          Positioned(
+            top: 40,
+            left: 10,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ),
         ],

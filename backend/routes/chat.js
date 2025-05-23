@@ -179,8 +179,8 @@ router.post('/criar', async (req, res) => {
          SELECT p1.chat_idchat 
          FROM participantes p1
          INNER JOIN participantes p2 ON p1.chat_idchat = p2.chat_idchat
-         WHERE p1.Usuario_idusuario = ? 
-         AND p2.Usuario_idusuario = ?
+         WHERE p1.usuarios_idusuarios = ? 
+         AND p2.usuarios_idusuarios = ?
        )`,
       [usuario_id, admin_id]
     );
@@ -201,12 +201,15 @@ router.post('/criar', async (req, res) => {
     );
 
     const chatId = result.insertId;
+    console.log('Novo chat criado com ID:', chatId);
 
     // Add participants
+    console.log('Adicionando participantes ao chat:', chatId);
     await db.execute(
-      'INSERT INTO participantes (Usuario_idusuario, chat_idchat) VALUES (?, ?), (?, ?)',
+      'INSERT INTO participantes (usuarios_idusuarios, chat_idchat) VALUES (?, ?), (?, ?)',
       [usuario_id, chatId, admin_id, chatId]
     );
+    console.log('Participantes adicionados ao chat:', chatId);
 
     console.log('Novo chat criado:', { chatId, usuario_id });
 

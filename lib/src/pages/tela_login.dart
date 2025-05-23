@@ -3,7 +3,9 @@ import 'package:maga_app/src/pages/tela_principal.dart';
 import 'package:maga_app/src/pages/tela_registrar.dart';
 import 'package:maga_app/src/pages/tela_confirmacao.dart';
 import 'package:maga_app/src/pages/tela_recuperacao.dart';
+import 'package:maga_app/src/pages/tela_dashboard_admin.dart';
 import 'package:validatorless/validatorless.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 
@@ -192,14 +194,28 @@ class _TelaLoginState extends State<TelaLogin> {
                                     _senhaController.text,
                                   );
 
-                                  if (!mounted) return;
-
-                                  if (result['success']) {
+                                  if (!mounted) return;                                  if (result['success']) {
                                     // Login successful
-                                    Navigator.pushReplacement(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const TelaPrincipal()),
-                                    );
+                                    // Verificar a permissão do usuário
+                                    final prefs = await SharedPreferences.getInstance();
+                                    final permissao = prefs.getInt('user_permission') ?? 0;
+                                    
+                                    if (!mounted) return;
+                                    
+                                    // Redirecionar com base na permissão
+                                    if (permissao == 1) {
+                                      // Usuário é admin, vai para dashboard
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const TelaDashboardAdmin()),
+                                      );
+                                    } else {
+                                      // Usuário normal, vai para tela principal
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const TelaPrincipal()),
+                                      );
+                                    }
                                   } else {
                                     // Show error message
                                     ScaffoldMessenger.of(context).showSnackBar(

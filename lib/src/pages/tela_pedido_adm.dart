@@ -37,53 +37,83 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gerenciamento de Pedidos'),
-        backgroundColor: const Color(0xFF0F59F7),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _pedidos.isEmpty
-                        ? const Center(
-                            child: Text('Nenhum pedido encontrado'),
-                          )
-                        : ListView.builder(
-                            itemCount: _pedidos.length,
-                            itemBuilder: (context, index) {
-                              final pedido = _pedidos[index];
-                              return _buildPedidoCard(pedido);
-                            },
-                          ),
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F59F7), Color(0xFF020e26)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF0F59F7),
-        onPressed: _loadPedidos,
-        child: const Icon(Icons.refresh),
+            child: Column(
+              children: [
+                const SizedBox(height: 50),
+                const Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Text(
+                    'Gerenciamento de Pedidos',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _pedidos.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'Nenhum pedido encontrado',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: _pedidos.length,
+                                itemBuilder: (context, index) {
+                                  final pedido = _pedidos[index];
+                                  return _buildPedidoCard(pedido);
+                                },
+                              ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 40,
+            left: 10,
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          Positioned(
+            bottom: 30,
+            right: 30,
+            child: FloatingActionButton(
+              backgroundColor: const Color(0xFF0F59F7),
+              onPressed: _loadPedidos,
+              child: const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }

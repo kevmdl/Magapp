@@ -12,9 +12,9 @@ void main() {
     int? testUserId;
     
     // Dados de teste
-    final testUserName = 'Usuário de Teste';
+    const testUserName = 'Usuário de Teste';
     final testUserEmail = 'teste_${DateTime.now().millisecondsSinceEpoch}@example.com';
-    final testUserPassword = 'senha123';
+    const testUserPassword = 'senha123';
     
     test('Deve simular conexão ao banco de dados MySQL', () async {
       var connection = await MockMySqlService.getConnection();
@@ -76,7 +76,7 @@ void main() {
     
     test('Deve retornar erro ao tentar inserir email duplicado', () async {
       // Primeiro insere um usuário
-      final email = 'duplicado@example.com';
+      const email = 'duplicado@example.com';
       await MockMySqlService.insertUser('Usuário 1', email, 'senha123');
       
       // Tenta inserir outro usuário com o mesmo email
