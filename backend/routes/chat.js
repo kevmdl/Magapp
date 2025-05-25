@@ -239,12 +239,12 @@ router.get('/clients-with-chats/:adminId', async (req, res) => {
     const [clients] = await db.execute(`
       SELECT DISTINCT u.*, c.idchat as chat_id
       FROM usuarios u
-      INNER JOIN participantes p ON u.idusuarios = p.Usuario_idusuario
+      INNER JOIN participantes p ON u.idusuarios = p.usuarios_idusuarios
       INNER JOIN chat c ON p.chat_idchat = c.idchat
       WHERE c.idchat IN (
         SELECT chat_idchat 
         FROM participantes 
-        WHERE Usuario_idusuario = ?
+        WHERE usuarios_idusuarios = ?
       )
       AND u.idusuarios != ?
     `, [adminId, adminId]);

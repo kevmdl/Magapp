@@ -37,6 +37,7 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -275,16 +276,52 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
       return;
     }
 
+    String? mensagemRejeicao;
+
+    // Se for rejeição, peça a mensagem
+    if (concluido == 2) {
+      final result = await showDialog<String>(
+        context: context,
+        builder: (context) {
+          final controller = TextEditingController();
+          return AlertDialog(
+            title: const Text('Motivo da rejeição'),
+            content: TextField(
+              controller: controller,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Digite o motivo para o cliente',
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, null),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  if (controller.text.trim().isEmpty) return;
+                  Navigator.pop(context, controller.text.trim());
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Rejeitar'),
+              ),
+            ],
+          );
+        },
+      );
+      if (result == null || result.isEmpty) return; // Cancelado ou vazio
+      mensagemRejeicao = result;
+    }
+
     try {
       final success = await ApiService.updatePedidoStatus(
         pedidoId.toString(),
         concluido,
+        rejectMessage: mensagemRejeicao,
       );
 
-      if (!success) {
-        throw Exception('Falha ao atualizar status');
-      }
-
+      if (!success) throw Exception('Falha ao atualizar status');
       await _loadPedidos();
 
       if (mounted) {

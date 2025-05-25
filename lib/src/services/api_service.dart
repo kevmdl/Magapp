@@ -7,20 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/client_model.dart';
 
 class ApiService {
-  // Determina a URL base baseada na plataforma em que o app está sendo executado
-  static String get _baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:3000'; // URL para web
-    } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000'; // URL para emuladores Android
-    } else {
-      return 'http://localhost:3000'; // URL para iOS/macOS
-    }
-    // Se estiver testando em um dispositivo físico, substitua por seu IP local:
-    // return 'http://192.168.1.x:3000';
-  }
-
-  // Token armazenado em memória
+  static const String _baseUrl = 'http://192.168.1.12:3000';
   static String? _authToken;
 
   // Getter para o token
@@ -395,7 +382,7 @@ class ApiService {
 
   static Future<List<Map<String, dynamic>>> getAllPedidos() async {
   try {
-    print('Fetching all pedidos...'); // Debug log
+    print('Fetching all pedidos from: $_baseUrl/api/pedidos'); // Debug
     final response = await http.get(
       Uri.parse('$_baseUrl/api/pedidos'),
       headers: {
@@ -403,40 +390,46 @@ class ApiService {
       },
     );
 
-    print('Response status: ${response.statusCode}'); // Debug log
-    print('Response body: ${response.body}'); // Debug log
+    print('Response status: ${response.statusCode}'); // Debug
+    print('Response body: ${response.body}'); // Debug
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return List<Map<String, dynamic>>.from(data['data'] ?? []);
+      if (data['success'] == true && data['data'] != null) {
+        return List<Map<String, dynamic>>.from(data['data']);
+      }
     }
     
     throw Exception('Failed to load pedidos: ${response.statusCode}');
   } catch (e) {
-    print('Error fetching pedidos: $e'); // Debug log
+    print('Error fetching pedidos: $e'); // Debug
     return [];
   }
 }
 
-  static Future<bool> updatePedidoStatus(String pedidoId, int concluido) async {
+  static Future<bool> updatePedidoStatus(
+  String pedidoId,
+  int concluido, {
+  String? rejectMessage,
+}) async {
   try {
-    print('Updating pedido $pedidoId to status $concluido'); // Debug log
+    print('Sending update request with: $pedidoId, $concluido, $rejectMessage'); // Debug log
+    
     final response = await http.put(
       Uri.parse('$_baseUrl/api/pedidos/$pedidoId/status'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'concluido': concluido,
+        'mensagem_rejeicao': rejectMessage, // Changed from rejectMessage to match backend
       }),
     );
-
+    
     print('Response status: ${response.statusCode}'); // Debug log
     print('Response body: ${response.body}'); // Debug log
-
+    
     return response.statusCode == 200;
   } catch (e) {
-    print('Error updating pedido status: $e'); // Debug log
+    print('Error updating pedido status: $e');
     return false;
   }
 }
@@ -525,4 +518,23 @@ static Future<bool> updateUserProfile(Map<String, dynamic> userData) async {
       return false;
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getUserPedidos(String email) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/api/pedidos/user/$email'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<Map<String, dynamic>>.from(data['data'] ?? []);
+    }
+    
+    return [];
+  } catch (e) {
+    print('Error fetching user pedidos: $e');
+    return [];
+  }
+}
 }

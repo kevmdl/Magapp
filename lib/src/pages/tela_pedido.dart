@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert'; // Adicione este import
+import '../services/api_service.dart';
 
-class TelaPedido extends StatefulWidget { // Nome da classe corrigido
+class TelaPedido extends StatefulWidget {
   const TelaPedido({super.key});
 
   @override
@@ -9,12 +12,61 @@ class TelaPedido extends StatefulWidget { // Nome da classe corrigido
 }
 
 class _TelaPedidoState extends State<TelaPedido> {
-  DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay = DateTime.now(); // Inicializar com o dia atual
+  List<Map<String, dynamic>> _meusPedidos = [];
+  bool _isLoading = true;
+  String? _userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPedidos();
+  }
+
+  Future<void> _loadUserPedidos() async {
+    setState(() => _isLoading = true);
+    try {
+      // Pegar o email do usuário logado
+      final prefs = await SharedPreferences.getInstance();
+      final userData = prefs.getString('usuario_dados');
+      
+      if (userData != null) {
+        final user = jsonDecode(userData);
+        _userEmail = user['email'];
+        print('User email: $_userEmail'); // Debug
+        
+        // Buscar apenas os pedidos do usuário logado
+        if (_userEmail != null) {
+          final meusPedidos = await ApiService.getUserPedidos(_userEmail!);
+          print('Pedidos do usuário encontrados: ${meusPedidos.length}'); // Debug
+          
+          if (mounted) {
+            setState(() {
+              _meusPedidos = meusPedidos;
+              _isLoading = false;
+            });
+          }
+        } else {
+          throw Exception('Email do usuário não encontrado');
+        }
+      } else {
+        throw Exception('Dados do usuário não encontrados');
+      }
+    } catch (e) {
+      print('Erro ao carregar pedidos: $e');
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Meus Pedidos'),
+        backgroundColor: const Color(0xFF0F59F7),
+        foregroundColor: Colors.white,
+      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -25,156 +77,241 @@ class _TelaPedidoState extends State<TelaPedido> {
         ),
         child: Column(
           children: [
-          
-            Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
-              ),
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: Colors.black),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Image.asset(
-                            'assets/img/logo_maga_app.png',
-                            height: 60,
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _meusPedidos.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.assignment_outlined,
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'Nenhum pedido encontrado',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(8),
+                            itemCount: _meusPedidos.length,
+                            itemBuilder: (context, index) {
+                              final pedido = _meusPedidos[index];
+                              return _buildPedidoCard(pedido);
+                            },
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 40),
-                    ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF0F59F7),
+        onPressed: _loadUserPedidos,
+        child: const Icon(Icons.refresh, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildPedidoCard(Map<String, dynamic> pedido) {
+    final idPedido = pedido['idpedidos']?.toString() ?? 'N/A';
+    final concluido = int.tryParse(pedido['concluido']?.toString() ?? '0') ?? 0;
+    final dataConclusao = pedido['data_conclusao'] != null
+        ? DateTime.parse(pedido['data_conclusao'])
+        : null;
+    final mensagemRejeicao = pedido['mensagem_rejeicao'];
+
+    String getStatusText() {
+      switch (concluido) {
+        case 1:
+          return 'Aprovado';
+        case 2:
+          return 'Rejeitado';
+        default:
+          return 'Em Análise';
+      }
+    }
+
+    Color getStatusColor() {
+      switch (concluido) {
+        case 1:
+          return Colors.green;
+        case 2:
+          return Colors.red;
+        default:
+          return Colors.orange;
+      }
+    }
+
+    IconData getStatusIcon() {
+      switch (concluido) {
+        case 1:
+          return Icons.check_circle;
+        case 2:
+          return Icons.cancel;
+        default:
+          return Icons.hourglass_empty;
+      }
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ExpansionTile(
+        title: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: getStatusColor().withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                getStatusIcon(),
+                color: getStatusColor(),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pedido #$idPedido',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'Status: ${getStatusText()}',
+                    style: TextStyle(
+                      color: getStatusColor(),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    children: [
-                      _buildCalendar(),
-                      _buildPedidos(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
-      ),
-    );
-  }
-
-  // Função para construir o calendário
-  Widget _buildCalendar() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: TableCalendar(
-          focusedDay: _focusedDay,
-          firstDay: DateTime(2000),
-          lastDay: DateTime(2050),
-          currentDay: DateTime.now(),
-          calendarFormat: CalendarFormat.month,
-          locale: 'pt_BR',
-          selectedDayPredicate: (day) {
-            return isSameDay(_selectedDay, day);
-          },
-          onDaySelected: (selectedDay, focusedDay) {
-            setState(() {
-              _selectedDay = selectedDay;
-              _focusedDay = focusedDay;
-            });
-          },
-          headerStyle: const HeaderStyle(
-            formatButtonVisible: false,
-            titleCentered: true,
-            titleTextStyle: TextStyle(
-              fontSize: 18, 
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF063FBA),
-            ),
-            leftChevronIcon: Icon(Icons.chevron_left, color: Color(0xFF063FBA)),
-            rightChevronIcon: Icon(Icons.chevron_right, color: Color(0xFF063FBA)),
-          ),
-          calendarStyle: CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: const Color(0xFF063FBA).withOpacity(0.5),
-              shape: BoxShape.circle,
-            ),
-            selectedDecoration: const BoxDecoration(
-              color: Color(0xFF063FBA),
-              shape: BoxShape.circle,
-            ),
-            defaultTextStyle: const TextStyle(color: Colors.black87),
-            weekendTextStyle: const TextStyle(color: Colors.red),
-            outsideTextStyle: const TextStyle(color: Colors.grey),
-          ),
-          daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(color: Color(0xFF063FBA)),
-            weekendStyle: TextStyle(color: Colors.red),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Função para construir a seção Meus Pedidos
-  Widget _buildPedidos() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 3,
-      margin: const EdgeInsets.only(top: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Column(
+        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Meus Pedidos", 
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const Divider(),
-            _buildPedidoItem("01/01", "Placa: ******", "Renavam: *******", 
-                           "Veículo/modelo: *****", "Cor: *****"),
-            _buildPedidoItem("02/01", "Placa: ******", "Renavam: *******", 
-                           "Veículo/modelo: *****", "Cor: *****"),
+            const SizedBox(height: 8),
+            Text('Veículo: ${pedido['modelo'] ?? 'N/A'} - ${pedido['cor'] ?? 'N/A'}'),
+            Text('Placa: ${pedido['placa'] ?? 'N/A'}'),
+            if (dataConclusao != null)
+              Text(
+                'Processado em: ${DateFormat('dd/MM/yyyy HH:mm').format(dataConclusao)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPedidoItem(String data, String placa, String renavam, 
-                         String modelo, String cor) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(data, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(width: 15),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(placa),
-                Text(renavam),
-                Text(modelo),
-                Text(cor),
+                const Divider(),
+                const Text(
+                  'Detalhes do Veículo:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildDetailRow('Placa', pedido['placa']),
+                _buildDetailRow('Renavam', pedido['renavam']),
+                _buildDetailRow('Chassi', pedido['chassi']),
+                _buildDetailRow('Modelo', pedido['modelo']),
+                _buildDetailRow('Cor', pedido['cor']),
+                
+                // Mostrar mensagem de rejeição se houver
+                if (concluido == 2 && mensagemRejeicao != null && mensagemRejeicao.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.error_outline, color: Colors.red, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Motivo da Rejeição:',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          mensagemRejeicao,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              '$label:',
+              style: const TextStyle(
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value ?? 'Não informado',
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         ],

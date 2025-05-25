@@ -8,11 +8,11 @@ class AuthService {
   static const _storage = FlutterSecureStorage();
 
   AuthService() {
-    _dio.options.baseUrl = ApiConfig.baseUrl;
+    _dio.options.baseUrl = ApiConfig.baseUrl; // Vai usar http://192.168.1.12:3000
     _dio.options.headers = ApiConfig.headers;
-    _dio.options.connectTimeout = const Duration(seconds: 5*6000);
-    _dio.options.receiveTimeout = const Duration(seconds: 5*6000);
-    _dio.options.sendTimeout = const Duration(seconds: 5*6000);
+    _dio.options.connectTimeout = const Duration(seconds: 30);
+    _dio.options.receiveTimeout = const Duration(seconds: 30);
+    _dio.options.sendTimeout = const Duration(seconds: 30);
     
     _dio.interceptors.add(dio.LogInterceptor(
       requestBody: true,

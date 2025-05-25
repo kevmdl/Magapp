@@ -10,15 +10,16 @@ router.post('/', async (req, res) => {
     renavam,
     chassi,
     modelo,
-    cor
+    cor,
+    email_cliente // Adicionar este campo
   } = req.body;
 
   try {
     const [result] = await db.execute(
       `INSERT INTO pedidos 
-       (nome_cliente, cpf, placa, renavam, chassi, modelo, cor, concluido, data_conclusao) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0, NULL)`,
-      [nome_cliente, cpf, placa, renavam, chassi, modelo, cor]
+       (nome_cliente, cpf, placa, renavam, chassi, modelo, cor, email_cliente, concluido, data_conclusao) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NULL)`,
+      [nome_cliente, cpf, placa, renavam, chassi, modelo, cor, email_cliente]
     );
 
     res.status(201).json({
@@ -61,16 +62,23 @@ router.get('/', async (req, res) => {
 
 router.put('/:id/status', async (req, res) => {
   const { id } = req.params;
-  const { concluido } = req.body;
+  const { concluido, mensagem_rejeicao } = req.body; // Changed from rejectMessage
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
   try {
+    // Log para debug
+    console.log('Updating pedido:', { id, concluido, mensagem_rejeicao, now });
+
+    // Ensure mensagem_rejeicao is null if not provided
+    const rejectMessage = concluido === 2 ? (mensagem_rejeicao || null) : null;
+
     await db.execute(
       `UPDATE pedidos 
        SET concluido = ?, 
-           data_conclusao = ? 
+           data_conclusao = ?,
+           mensagem_rejeicao = ?
        WHERE idpedidos = ?`,
-      [concluido, now, id]
+      [concluido, now, rejectMessage, id]
     );
 
     res.json({
@@ -82,6 +90,34 @@ router.put('/:id/status', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Erro ao atualizar pedido'
+    });
+  }
+});
+
+// Adicione este endpoint
+router.get('/user/:email', async (req, res) => {
+  const { email } = req.params;
+  
+  try {
+    console.log(`Buscando pedidos para o email: ${email}`);
+    
+    const [pedidos] = await db.execute(`
+      SELECT * FROM pedidos 
+      WHERE email_cliente = ?
+      ORDER BY idpedidos DESC
+    `, [email]);
+    
+    console.log(`Encontrados ${pedidos.length} pedidos para ${email}`);
+    
+    res.json({
+      success: true,
+      data: pedidos
+    });
+  } catch (error) {
+    console.error('Error fetching user pedidos:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching user pedidos'
     });
   }
 });

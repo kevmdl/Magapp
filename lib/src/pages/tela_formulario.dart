@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:validatorless/validatorless.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 import '../services/api_service.dart';
 
@@ -20,6 +22,7 @@ class _TelaFormularioState extends State<TelaFormulario> {
   final _chassiController = TextEditingController();
   final _modeloController = TextEditingController();
   final _corController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -31,6 +34,64 @@ class _TelaFormularioState extends State<TelaFormulario> {
     _modeloController.dispose();
     _corController.dispose();
     super.dispose();
+  }
+
+  Future<void> _enviarPedido() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Pegar email do usuário logado
+      final prefs = await SharedPreferences.getInstance();
+      final userData = prefs.getString('usuario_dados');
+      String? emailCliente;
+      
+      if (userData != null) {
+        final user = jsonDecode(userData);
+        emailCliente = user['email'];
+      }
+
+      final pedidoData = {
+        'nome_cliente': _nomeController.text,
+        'cpf': _cpfController.text,
+        'placa': _placaController.text,
+        'renavam': _renavamController.text,
+        'chassi': _chassiController.text,
+        'modelo': _modeloController.text,
+        'cor': _corController.text,
+        'email_cliente': emailCliente, // Adicionar este campo
+      };
+
+      final sucesso = await ApiService.createPedido(pedidoData);
+
+      if (sucesso) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pedido enviado com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } else {
+        throw Exception('Falha ao criar pedido');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao enviar pedido: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -212,77 +273,12 @@ class _TelaFormularioState extends State<TelaFormulario> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                onPressed: () async {
-                                  final formValid = _formKey.currentState?.validate() ?? false;
-                                  if (formValid) {
-                                    try {
-                                      final pedidoData = {
-                                        'nome_cliente': _nomeController.text,
-                                        'cpf': _cpfController.text,
-                                        'placa': _placaController.text,
-                                        'renavam': _renavamController.text,
-                                        'chassi': _chassiController.text,
-                                        'modelo': _modeloController.text,
-                                        'cor': _corController.text,
-                                        'concluido': 0, // Estado inicial: não concluído
-                                      };
-
-                                      final success = await ApiService.createPedido(pedidoData);
-
-                                      if (!mounted) return;
-
-                                      if (success) {
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(15),
-                                              ),
-                                              title: const Row(
-                                                children: [
-                                                  Icon(Icons.check_circle, color: Color(0xFF063FBA)),
-                                                  SizedBox(width: 10),
-                                                  Text("Sucesso!"),
-                                                ],
-                                              ),
-                                              content: const Text("Pedido feito com sucesso!"),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () {
-                                                    Navigator.of(context).pop(); // Fechar diálogo
-                                                    Navigator.of(context).pop(); // Voltar para a tela anterior
-                                                  },
-                                                  child: const Text(
-                                                    "OK",
-                                                    style: TextStyle(color: Color(0xFF063FBA)),
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Erro ao criar pedido. Tente novamente.'),
-                                            backgroundColor: Colors.red,
-                                          ),
-                                        );
-                                      }
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('Erro: $e'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                child: const Center(
-                                  child: Text("Fazer Pedido"),
-                                ),
+                                onPressed: _isLoading ? null : _enviarPedido,
+                                child: _isLoading 
+                                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                                  : const Center(
+                                      child: Text("Fazer Pedido"),
+                                    ),
                               ),
                             ],
                           ),
