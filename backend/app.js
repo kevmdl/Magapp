@@ -24,7 +24,16 @@ db.execute('SELECT 1')
     process.exit(1); // Encerra a aplicação se não conseguir conectar
   });
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 
+    'http://127.0.0.1:8080', 'http://127.0.0.1:8081', 'http://127.0.0.1:8082',
+    'http://192.168.15.49:8080', 'http://192.168.15.49:8081', 'http://192.168.15.49:8082'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
@@ -93,6 +102,8 @@ app.post("/login/demo", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+    console.log(`📱 Acesse do celular: http://192.168.15.49:${PORT}`);
+    console.log(`💻 Acesse do computador: http://localhost:${PORT}`);
 });

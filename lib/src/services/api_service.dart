@@ -1,13 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/client_model.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://192.168.1.12:3000';
+  static const String _baseUrl = 'http://localhost:3000';
   static String? _authToken;
 
   // Getter para o token
@@ -98,13 +96,12 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('usuario_dados');
-    await prefs.remove('user_permission'); // Remover permissão
-    await prefs.remove('user_id'); // Remover ID do usuário
+    await prefs.remove('user_permission'); 
+    await prefs.remove('user_id'); 
   }
 
-  // MÉTODOS DE CHAT
 
-  // Obter lista de usuários para chat
+
   static Future<List<Map<String, dynamic>>> getUsuarios() async {
     try {
       final response = await http.get(
@@ -128,7 +125,7 @@ class ApiService {
     }
   }
 
-  // Obter conversas do usuário atual
+ 
   static Future<List<Map<String, dynamic>>> getConversas(String usuarioId) async {
     try {
       final response = await http.get(
@@ -152,7 +149,7 @@ class ApiService {
     }
   }
 
-  // Obter mensagens entre dois usuários
+ 
   static Future<List<Map<String, dynamic>>> getMensagens(String usuario1Id, String usuario2Id) async {
     try {
       final response = await http.get(
