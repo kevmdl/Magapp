@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:maga_app/src/pages/tela_registrar.dart';
-import 'package:maga_app/src/pages/tela_confirmacao.dart';
 import '../mocks/auth_mock.dart';
 
 void main() {
@@ -146,11 +145,11 @@ void main() {
         find.byType(SingleChildScrollView),
         const Offset(0, 50),
       );
-      
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Registrar'));
+        await tester.tap(find.widgetWithText(ElevatedButton, 'Registrar'));
       await tester.pumpAndSettle();
       
-      expect(find.byType(TelaConfirmacao), findsOneWidget);
+      // Verifica se mostra mensagem de sucesso
+      expect(find.text('Usuário registrado com sucesso!'), findsOneWidget);
       
       addTearDown(() {
         tester.view.resetPhysicalSize();

@@ -42,10 +42,12 @@ class TelaDashboardAdmin extends StatelessWidget {
                 ),
                 boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 5)],
               ),
-              padding: const EdgeInsets.all(10.0),              child: Column(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
                 children: [
                   Row(
-                    children: [                      PopupMenuButton(
+                    children: [
+                      PopupMenuButton(
                         icon: const Icon(Icons.menu, color: Colors.black),
                         tooltip: '', // Removendo o texto "mostrar menu"
                         offset: const Offset(0, 50),

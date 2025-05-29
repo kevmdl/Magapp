@@ -1,7 +1,7 @@
 class ApiConfig {
-  static const String baseUrl = 'http://192.168.15.49:3000';
+  static const String baseUrl = 'http://localhost:3000';
   
-  // ⭐ ADICIONE SUA API KEY DO GEMINI FLASH LITE 2.0 AQUI ⭐
+  // ⭐ ADICIONE SUA API KEY DA MAG IA (BASEADA NO GEMINI) AQUI ⭐
   static const String geminiApiKey = 'AIzaSyC1JRQRC9xj1KPrU7eHss2RYepUXFykKmI';
   
   static const Map<String, String> headers = {

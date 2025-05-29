@@ -21,7 +21,6 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   final List<Content> _chatHistory = [];
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
-
   @override
   void initState() {
     super.initState();
@@ -33,8 +32,42 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
     
-    // Mensagem inicial de boas-vindas
-    _addMessage('Olá! Sou sua assistente IA Gemini Flash Lite 2.0. Como posso ajudar você hoje?', false);
+    // Mensagem inicial especializada em emplacamento
+    _addMessage(_getWelcomeMessage(), false);
+    
+    // Verificar se há um resumo de pedido para exibir
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _verificarResumoPedido();
+    });
+  }
+
+  String _getWelcomeMessage() {
+    return '''🚗 **Olá! Sou a Mag IA, sua assistente especializada em emplacamento de veículos!**
+
+Estou aqui para ajudar você 24/7 com:
+
+📋 **Processo de Emplacamento**
+• Orientações sobre documentação necessária
+• Verificação de documentos (CRV/CRLV-e)
+• Esclarecimento de dúvidas sobre taxas e prazos
+
+🤖 **Como posso ajudar:**
+• Responder suas perguntas sobre emplacamento
+• Analisar documentos enviados
+• Guiar você através do processo completo
+• Criar pedidos de emplacamento
+
+Como posso ajudar você hoje?''';
+  }
+
+  void _verificarResumoPedido() {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args['resumoPedido'] != null) {
+      final resumoPedido = args['resumoPedido'] as String;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _addMessage(resumoPedido, false);
+      });
+    }
   }
 
   @override
@@ -83,7 +116,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     });
 
     try {
-      // Envia mensagem para o Gemini Flash Lite 2.0
+      // Envia mensagem para a Mag IA
       final response = await GeminiService.sendMessageWithHistory(message, _chatHistory);
       
       // Adiciona resposta da IA
@@ -151,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                   ),
                   const SizedBox(width: 10),
                   const Text(
-                    'Gemini Flash Lite 2.0',
+                    'Mag IA',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -193,9 +226,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
-                      SizedBox(width: 12),
-                      Text(
-                        'Gemini está digitando...',
+                      SizedBox(width: 12),                      Text(
+                        'Mag IA está digitando...',
                         style: TextStyle(
                           color: Colors.grey,
                           fontStyle: FontStyle.italic,
@@ -258,8 +290,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      InkWell(
+                    children: [                      InkWell(
                         onTap: () {
                           _toggleMenu();
                           _messageController.text = 'Como posso anexar um documento?';
@@ -273,6 +304,52 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                               Icon(Icons.description, color: Color(0xFF063FBA)),
                               SizedBox(width: 12),
                               Text("Anexar documento", 
+                                style: TextStyle(
+                                  color: Color(0xFF063FBA),
+                                  fontSize: 16,
+                                )
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _toggleMenu();
+                          _messageController.text = 'Quais documentos preciso para emplacar meu veículo?';
+                          _sendMessage();
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.help_outline, color: Color(0xFF063FBA)),
+                              SizedBox(width: 12),
+                              Text("Documentos necessários", 
+                                style: TextStyle(
+                                  color: Color(0xFF063FBA),
+                                  fontSize: 16,
+                                )
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          _toggleMenu();
+                          _messageController.text = 'Quanto custa o emplacamento e quais são as taxas?';
+                          _sendMessage();
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.attach_money, color: Color(0xFF063FBA)),
+                              SizedBox(width: 12),
+                              Text("Taxas e custos", 
                                 style: TextStyle(
                                   color: Color(0xFF063FBA),
                                   fontSize: 16,

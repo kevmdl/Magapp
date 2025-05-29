@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 import '../services/api_service.dart';
+import 'ai_chatscreen.dart';
 
 class TelaFormulario extends StatefulWidget {
   const TelaFormulario({super.key});
@@ -23,7 +24,6 @@ class _TelaFormularioState extends State<TelaFormulario> {
   final _modeloController = TextEditingController();
   final _corController = TextEditingController();
   bool _isLoading = false;
-
   @override
   void dispose() {
     _nomeController.dispose();
@@ -36,20 +36,52 @@ class _TelaFormularioState extends State<TelaFormulario> {
     super.dispose();
   }
 
+  String _criarResumoPedido(Map<String, dynamic> pedidoData) {
+    return '''
+📋 **RESUMO DO PEDIDO DE EMPLACAMENTO**
+
+🏷️ **Cliente:** ${pedidoData['nome_cliente']}
+🆔 **CPF/CNPJ:** ${pedidoData['cpf']}
+
+🚗 **Dados do Veículo:**
+• **Placa:** ${pedidoData['placa']}
+• **Modelo:** ${pedidoData['modelo']}
+• **Cor:** ${pedidoData['cor']}
+• **RENAVAM:** ${pedidoData['renavam']}
+• **Chassi:** ${pedidoData['chassi']}
+
+✅ **Status:** Pedido criado com sucesso!
+📅 **Data:** ${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year}
+
+🔄 **Próximos Passos:**
+1. Verificação da documentação
+2. Análise dos dados do veículo
+3. Processamento do emplacamento
+4. Notificação de conclusão
+
+Seu pedido foi registrado no sistema da Mag IA e será processado em breve. Se precisar de ajuda ou tiver dúvidas sobre o processo de emplacamento, estou aqui para ajudar!
+
+💡 **Dica:** Mantenha seus documentos originais em mãos para possíveis verificações adicionais.
+    ''';
+  }
   Future<void> _enviarPedido() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Pegar email do usuário logado
+      // Pegar ID do usuário logado
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString('usuario_dados');
-      String? emailCliente;
+      int? usuarioId;
       
       if (userData != null) {
         final user = jsonDecode(userData);
-        emailCliente = user['email'];
+        usuarioId = user['idusuarios'];
+      }
+
+      if (usuarioId == null) {
+        throw Exception('ID do usuário não encontrado. Faça login novamente.');
       }
 
       final pedidoData = {
@@ -60,20 +92,29 @@ class _TelaFormularioState extends State<TelaFormulario> {
         'chassi': _chassiController.text,
         'modelo': _modeloController.text,
         'cor': _corController.text,
-        'email_cliente': emailCliente, // Adicionar este campo
-      };
-
-      final sucesso = await ApiService.createPedido(pedidoData);
+        'usuario_id': usuarioId, // Associar pedido ao usuário logado
+      };      final sucesso = await ApiService.createPedido(pedidoData);
 
       if (sucesso) {
         if (mounted) {
+          // Criar resumo do pedido
+          final resumoPedido = _criarResumoPedido(pedidoData);
+          
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Pedido enviado com sucesso!'),
+              content: Text('Pedido enviado com sucesso! Confira o resumo no chat da Mag IA.'),
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pop(context);
+          
+          // Navegar para o chat da IA com o resumo do pedido
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ChatScreen(),
+              settings: RouteSettings(arguments: {'resumoPedido': resumoPedido}),
+            ),
+          );
         }
       } else {
         throw Exception('Falha ao criar pedido');

@@ -194,7 +194,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                               : const TelaPedido(),
                           ),
                         );
-                      }),                      _buildCard(Icons.description, "Documento", "Função desativada", null),
+                      }),                      _buildCard(Icons.description, "Documento", "Essa funçao serve para enviar o arquivo para verificação.", null),
                       _buildCard(Icons.assignment, "Formulário", "No formulário você pode enviar um pedido para o estabelecimento", () {
                         if (_userPermission == 1) {
                           Navigator.push(

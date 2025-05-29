@@ -134,25 +134,29 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
 
     final dataConclusao = pedido['data_conclusao'] != null
         ? DateTime.parse(pedido['data_conclusao'])
-        : null;
-
-    String getStatusText() {
+        : null;    String getStatusText() {
       switch (concluido) {
         case 1:
           return 'Aprovado';
         case 2:
           return 'Rejeitado';
+        case 3:
+          return 'Aprovado - Pronto para Retirada';
+        case 4:
+          return 'Aprovado e Retirado';
         default:
           return 'Pendente';
       }
-    }
-
-    Color getStatusColor() {
+    }    Color getStatusColor() {
       switch (concluido) {
         case 1:
           return Colors.green;
         case 2:
           return Colors.red;
+        case 3:
+          return Colors.blue;
+        case 4:
+          return Colors.purple;
         default:
           return Colors.grey;
       }
@@ -190,20 +194,19 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
                   'Concluído em: ${DateFormat('dd/MM/yyyy HH:mm').format(dataConclusao)}'),
           ],
         ),
-        children: [
-          Padding(
+        children: [          Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildInfoRow('Placa', pedido['placa']),
                 _buildInfoRow('Renavam', pedido['renavam']),
                 _buildInfoRow('Chassi', pedido['chassi']),
                 _buildInfoRow('Modelo', pedido['modelo']),
-                _buildInfoRow('Cor', pedido['cor']),
-                const Divider(),
-                // Updated condition to check if pedido is not concluded
-                if (concluido != 1 && concluido != 2)
+                _buildInfoRow('Cor', pedido['cor']),                const Divider(),
+                // Botões para pedidos pendentes
+                if (concluido == 0)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -220,6 +223,58 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
                         () => _updatePedidoStatus(pedido['idpedidos'], 2),
                       ),
                     ],
+                  ),
+                // Botões para pedidos aprovados
+                if (concluido == 1)
+                  Column(
+                    children: [
+                      const Text(
+                        'Alterar status do pedido aprovado:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildActionButton(
+                            'Pronto para Retirada',
+                            Icons.inventory,
+                            Colors.blue,
+                            () => _updatePedidoStatus(pedido['idpedidos'], 3),
+                          ),
+                          _buildActionButton(
+                            'Marcar como Retirado',
+                            Icons.done_all,
+                            Colors.purple,
+                            () => _updatePedidoStatus(pedido['idpedidos'], 4),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),                // Botão para pedidos prontos para retirada
+                if (concluido == 3)
+                  Center(
+                    child: SizedBox(
+                      width: 200,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.done_all, size: 16),
+                        label: const Text(
+                          'Marcar como Retirado',
+                          style: TextStyle(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                          minimumSize: const Size(0, 40),
+                        ),
+                        onPressed: () => _updatePedidoStatus(pedido['idpedidos'], 4),
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -248,23 +303,32 @@ class _TelaPedidoAdminState extends State<TelaPedidoAdmin> {
         ],
       ),
     );
-  }
-
-  Widget _buildActionButton(
+  }  Widget _buildActionButton(
     String label,
     IconData icon,
     Color color,
     VoidCallback onPressed,
   ) {
-    return ElevatedButton.icon(
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Flexible(
+      fit: FlexFit.loose,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: ElevatedButton.icon(
+          icon: Icon(icon, size: 16),
+          label: Text(
+            label,
+            style: const TextStyle(fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: color,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            minimumSize: const Size(0, 40),
+          ),
+          onPressed: onPressed,
+        ),
       ),
-      onPressed: onPressed,
     );
   }
 

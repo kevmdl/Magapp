@@ -39,7 +39,7 @@ class MenuScreen extends StatelessWidget {
                 ),
               ),
               const Text(
-                'Olá, sou seu Assistente Virtual. Como posso te ajudar?',
+                'Olá, sou a Mag IA, sua Assistente Virtual. Como posso te ajudar?',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 18, color: Colors.white),
               ),
@@ -69,7 +69,7 @@ class MenuScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const ChatScreen()),
                   );
                 },
-                child: const Text('Falar com o Assistente IA'),
+                child: const Text('Falar com a Mag IA'),
               ),
             ],
           ),

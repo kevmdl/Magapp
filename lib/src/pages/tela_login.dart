@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
 import 'package:maga_app/src/pages/tela_registrar.dart';
-import 'package:maga_app/src/pages/tela_confirmacao.dart';
+
 import 'package:maga_app/src/pages/tela_recuperacao.dart';
 import 'package:maga_app/src/pages/tela_dashboard_admin.dart';
 import 'package:validatorless/validatorless.dart';
@@ -157,14 +157,11 @@ class _TelaLoginState extends State<TelaLogin> {
                           ),
                           Align(
                             alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {
+                            child: TextButton(                              onPressed: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const TelaConfirmacao(
-                                      proximaTela: TelaRecuperacao(),
-                                    ),
+                                    builder: (context) => const TelaRecuperacao(),
                                   ),
                                 );
                               },

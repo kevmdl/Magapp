@@ -3,9 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/client_model.dart';
+import '../config/api_config.dart';
 
 class ApiService {
-  static const String _baseUrl = 'http://localhost:3000';
+  static const String _baseUrl = ApiConfig.baseUrl;
   static String? _authToken;
 
   // Getter para o token
@@ -376,22 +377,25 @@ class ApiService {
       return [];
     }
   }
-
   static Future<List<Map<String, dynamic>>> getAllPedidos() async {
   try {
     print('Fetching all pedidos from: $_baseUrl/api/pedidos'); // Debug
     final response = await http.get(
       Uri.parse('$_baseUrl/api/pedidos'),
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Accept': 'application/json; charset=utf-8',
       },
     );
 
     print('Response status: ${response.statusCode}'); // Debug
-    print('Response body: ${response.body}'); // Debug
-
+    
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      // Decodificar usando UTF-8 explicitamente
+      final responseBody = utf8.decode(response.bodyBytes);
+      print('Response body decoded: ${responseBody.substring(0, 200)}...'); // Debug parcial
+      
+      final data = jsonDecode(responseBody);
       if (data['success'] == true && data['data'] != null) {
         return List<Map<String, dynamic>>.from(data['data']);
       }
@@ -513,25 +517,35 @@ static Future<bool> updateUserProfile(Map<String, dynamic> userData) async {
     } catch (e) {
       print('Erro ao atualizar cliente: $e');
       return false;
+    }  }  // Método para buscar pedidos de um usuário específico
+  static Future<List<Map<String, dynamic>>> getUserPedidos(String userId) async {
+    try {
+      print('Fetching pedidos for user: $userId'); // Debug
+      final response = await http.get(
+        Uri.parse('$_baseUrl/api/pedidos/user/$userId'),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': 'application/json; charset=utf-8',
+        },
+      );
+
+      print('Response status: ${response.statusCode}'); // Debug
+
+      if (response.statusCode == 200) {
+        // Decodificar usando UTF-8 explicitamente
+        final responseBody = utf8.decode(response.bodyBytes);
+        print('Response body decoded: ${responseBody.substring(0, 200)}...'); // Debug parcial
+        
+        final data = jsonDecode(responseBody);
+        if (data['success'] == true && data['data'] != null) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        }
+      }
+      
+      return [];
+    } catch (e) {
+      print('Error fetching user pedidos: $e');
+      return [];
     }
   }
-
-  static Future<List<Map<String, dynamic>>> getUserPedidos(String email) async {
-  try {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/api/pedidos/user/$email'),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return List<Map<String, dynamic>>.from(data['data'] ?? []);
-    }
-    
-    return [];
-  } catch (e) {
-    print('Error fetching user pedidos: $e');
-    return [];
-  }
-}
 }

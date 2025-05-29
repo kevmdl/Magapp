@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth"); // Add this line
 const chatRoutes = require('./routes/chat');
 const pedidosRoutes = require('./routes/pedidos');
 const usuariosRoutes = require('./routes/usuarios');
+const migrationRoutes = require('./routes/migration');
 
 // Teste de conexão com o banco
 db.execute('SELECT 1')
@@ -25,11 +26,7 @@ db.execute('SELECT 1')
   });
 
 app.use(cors({
-  origin: [
-    'http://localhost:8080', 'http://localhost:8081', 'http://localhost:8082', 
-    'http://127.0.0.1:8080', 'http://127.0.0.1:8081', 'http://127.0.0.1:8082',
-    'http://192.168.15.49:8080', 'http://192.168.15.49:8081', 'http://192.168.15.49:8082'
-  ],
+  origin: true, // Permitir todas as origens durante desenvolvimento
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
@@ -40,6 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/migration', migrationRoutes);
 
 app.post("/login", (req, res) => {
     console.log(req.body);

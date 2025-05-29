@@ -129,6 +129,35 @@ npm run dev
 
 Consulte o arquivo `flutter_integration_example.md` para exemplos de como integrar esta API com seu aplicativo Flutter.
 
+## Testes
+
+O projeto inclui uma suíte abrangente de testes automatizados para garantir a qualidade e funcionamento correto de todas as funcionalidades.
+
+### Executar Testes
+
+Execute todos os testes principais:
+```bash
+node tests/run_all_tests.js
+```
+
+Execute um teste específico:
+```bash
+node tests/test_status_transition.js
+node tests/test_utf8_fix.js
+node tests/pedidos-integration.js
+```
+
+### Tipos de Teste
+
+- **Testes de Status**: Verificam transições de status dos pedidos (1 → 3 → 4)
+- **Testes UTF-8**: Validam decodificação correta de caracteres especiais
+- **Testes de Integração**: Testam operações CRUD e conexão com banco
+- **Testes de WebSocket**: Verificam funcionalidades de chat em tempo real
+
+### Documentação dos Testes
+
+Consulte `tests/README.md` para documentação detalhada dos testes disponíveis.
+
 ## Segurança
 
 Esta API usa JWT (JSON Web Tokens) para autenticação. Todas as rotas da API, exceto login e registro, são protegidas e requerem um token JWT válido.

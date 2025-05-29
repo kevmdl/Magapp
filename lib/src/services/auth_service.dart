@@ -6,9 +6,8 @@ import 'dart:convert';
 class AuthService {
   final dio.Dio _dio = dio.Dio();
   static const _storage = FlutterSecureStorage();
-
   AuthService() {
-    _dio.options.baseUrl = ApiConfig.baseUrl; // Vai usar http://localhost:3000
+    _dio.options.baseUrl = ApiConfig.baseUrl; // Vai usar http://192.168.15.49:8080
     _dio.options.headers = ApiConfig.headers;
     _dio.options.connectTimeout = const Duration(seconds: 30);
     _dio.options.receiveTimeout = const Duration(seconds: 30);

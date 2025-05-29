@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert'; // Adicione este import
+import 'dart:convert';
 import '../services/api_service.dart';
 
 class TelaPedido extends StatefulWidget {
@@ -14,39 +14,32 @@ class TelaPedido extends StatefulWidget {
 class _TelaPedidoState extends State<TelaPedido> {
   List<Map<String, dynamic>> _meusPedidos = [];
   bool _isLoading = true;
-  String? _userEmail;
 
   @override
   void initState() {
     super.initState();
     _loadUserPedidos();
-  }
-
-  Future<void> _loadUserPedidos() async {
+  }  Future<void> _loadUserPedidos() async {
     setState(() => _isLoading = true);
     try {
-      // Pegar o email do usuário logado
+      // Pegar o ID do usuário logado
       final prefs = await SharedPreferences.getInstance();
       final userData = prefs.getString('usuario_dados');
       
       if (userData != null) {
         final user = jsonDecode(userData);
-        _userEmail = user['email'];
-        print('User email: $_userEmail'); // Debug
+        final userId = user['idusuarios'].toString();
+        print('User ID: $userId'); // Debug
         
         // Buscar apenas os pedidos do usuário logado
-        if (_userEmail != null) {
-          final meusPedidos = await ApiService.getUserPedidos(_userEmail!);
-          print('Pedidos do usuário encontrados: ${meusPedidos.length}'); // Debug
-          
-          if (mounted) {
-            setState(() {
-              _meusPedidos = meusPedidos;
-              _isLoading = false;
-            });
-          }
-        } else {
-          throw Exception('Email do usuário não encontrado');
+        final meusPedidos = await ApiService.getUserPedidos(userId);
+        print('Pedidos do usuário encontrados: ${meusPedidos.length}'); // Debug
+        
+        if (mounted) {
+          setState(() {
+            _meusPedidos = meusPedidos;
+            _isLoading = false;
+          });
         }
       } else {
         throw Exception('Dados do usuário não encontrados');
@@ -61,8 +54,7 @@ class _TelaPedidoState extends State<TelaPedido> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return Scaffold(      appBar: AppBar(
         title: const Text('Meus Pedidos'),
         backgroundColor: const Color(0xFF0F59F7),
         foregroundColor: Colors.white,
@@ -134,25 +126,29 @@ class _TelaPedidoState extends State<TelaPedido> {
     final dataConclusao = pedido['data_conclusao'] != null
         ? DateTime.parse(pedido['data_conclusao'])
         : null;
-    final mensagemRejeicao = pedido['mensagem_rejeicao'];
-
-    String getStatusText() {
+    final mensagemRejeicao = pedido['mensagem_rejeicao'];    String getStatusText() {
       switch (concluido) {
         case 1:
           return 'Aprovado';
         case 2:
           return 'Rejeitado';
+        case 3:
+          return 'Aprovado - Pronto para Retirada';
+        case 4:
+          return 'Aprovado e Retirado';
         default:
           return 'Em Análise';
       }
-    }
-
-    Color getStatusColor() {
+    }    Color getStatusColor() {
       switch (concluido) {
         case 1:
           return Colors.green;
         case 2:
           return Colors.red;
+        case 3:
+          return Colors.blue;
+        case 4:
+          return Colors.purple;
         default:
           return Colors.orange;
       }
@@ -164,6 +160,10 @@ class _TelaPedidoState extends State<TelaPedido> {
           return Icons.check_circle;
         case 2:
           return Icons.cancel;
+        case 3:
+          return Icons.inventory;
+        case 4:
+          return Icons.done_all;
         default:
           return Icons.hourglass_empty;
       }

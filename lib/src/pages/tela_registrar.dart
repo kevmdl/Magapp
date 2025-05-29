@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:maga_app/src/pages/tela_principal.dart';
-import 'package:maga_app/src/pages/tela_confirmacao.dart';
+
 import 'package:validatorless/validatorless.dart';
 import 'package:maga_app/src/services/auth_service.dart';
 
@@ -50,15 +50,18 @@ class _TelaRegistrarState extends State<TelaRegistrar> {
         senha,
       );
 
-      if (sucesso) {
-        // Se o registro foi bem sucedido
+      if (sucesso) {        // Se o registro foi bem sucedido
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Usuário registrado com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => const TelaConfirmacao(
-                proximaTela: TelaPrincipal(),
-              ),
+              builder: (context) => const TelaPrincipal(),
             ),
           );
         }
