@@ -80,9 +80,9 @@ class _TelaLoginState extends State<TelaLogin> {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
+                            children: [                              Flexible(
                                 child: RichText(
+                                  key: const Key('welcomeTitleKey'), // Mudando nome da key para evitar conflito
                                   text: const TextSpan(
                                     children: [
                                       TextSpan(
