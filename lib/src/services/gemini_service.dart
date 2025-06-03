@@ -1,5 +1,6 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../config/api_config.dart';
+import 'ai_guard_rails_service.dart';
 
 class GeminiService {
   static GenerativeModel? _model;
@@ -72,50 +73,146 @@ CONHECIMENTOS ESPECÍFICOS:
 Sempre mantenha o foco em ser útil e eficiente, ajudando a resolver problemas relacionados ao emplacamento de veículos.
 ''';
   }
-
   // Método principal para envio de mensagens
-  static Future<String> sendMessage(String message) async {
+  static Future<String> sendMessage(String message, {String? userId}) async {
+    // Guard Rails: Validação de entrada
+    final validation = AiGuardRailsService.validateTextInput(message);
+    if (!validation.isValid) {
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'message_blocked', 
+        metadata: {'reason': validation.message});
+      return 'Mensagem inválida: ${validation.message}';
+    }
+
+    // Guard Rails: Rate limiting
+    final rateLimitCheck = AiGuardRailsService.checkRateLimit(userId ?? 'anonymous');
+    if (!rateLimitCheck.isValid) {
+      return rateLimitCheck.message;
+    }
+
     try {
-      final chat = model.startChat(history: []);
-      final content = Content.text(message);
-      final response = await chat.sendMessage(content);
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'send_message', 
+        metadata: {'message_length': message.length});
       
-      return response.text ?? 'Desculpe, não consegui processar sua mensagem.';
+      final chat = model.startChat(history: []);
+      final content = Content.text(validation.data);
+      
+      // Timeout protection
+      final response = await chat.sendMessage(content)
+        .timeout(Duration(minutes: 2));
+      
+      final rawResponse = response.text ?? 'Desculpe, não consegui processar sua mensagem.';
+      
+      // Guard Rails: Sanitização da resposta
+      final sanitizedResponse = AiGuardRailsService.sanitizeAiResponse(rawResponse);
+      
+      return sanitizedResponse;
     } catch (e) {
       print('Erro ao enviar mensagem para Mag IA: $e');
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'message_error', 
+        metadata: {'error': e.toString()});
       return 'Desculpe, ocorreu um erro. Tente novamente.';
+    } finally {
+      AiGuardRailsService.endRequest();
     }
   }
 
   // Método com histórico de conversa (contexto mantido)
-  static Future<String> sendMessageWithHistory(String message, List<Content> history) async {
+  static Future<String> sendMessageWithHistory(String message, List<Content> history, {String? userId}) async {
+    // Guard Rails: Validação de entrada
+    final validation = AiGuardRailsService.validateTextInput(message);
+    if (!validation.isValid) {
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'message_blocked', 
+        metadata: {'reason': validation.message});
+      return 'Mensagem inválida: ${validation.message}';
+    }
+
+    // Guard Rails: Rate limiting
+    final rateLimitCheck = AiGuardRailsService.checkRateLimit(userId ?? 'anonymous');
+    if (!rateLimitCheck.isValid) {
+      return rateLimitCheck.message;
+    }
+
+    // Guard Rails: Verificação do histórico
+    if (history.length > 100) {
+      history = history.takeLast(50).toList(); // Limita histórico
+    }
+
     try {
-      final chat = model.startChat(history: history);
-      final content = Content.text(message);
-      final response = await chat.sendMessage(content);
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'send_message_with_history', 
+        metadata: {
+          'message_length': message.length,
+          'history_length': history.length
+        });
       
-      return response.text ?? 'Desculpe, não consegui processar sua mensagem.';
+      final chat = model.startChat(history: history);
+      final content = Content.text(validation.data);
+      
+      // Timeout protection
+      final response = await chat.sendMessage(content)
+        .timeout(Duration(minutes: 2));
+      
+      final rawResponse = response.text ?? 'Desculpe, não consegui processar sua mensagem.';
+      
+      // Guard Rails: Sanitização da resposta
+      final sanitizedResponse = AiGuardRailsService.sanitizeAiResponse(rawResponse);
+      
+      return sanitizedResponse;
     } catch (e) {
       print('Erro ao enviar mensagem com histórico para Mag IA: $e');
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'message_error', 
+        metadata: {'error': e.toString()});
       return 'Desculpe, ocorreu um erro. Tente novamente.';
+    } finally {
+      AiGuardRailsService.endRequest();
     }
   }
-
   // Método para streaming de respostas (opcional - para respostas em tempo real)
-  static Stream<String> sendMessageStream(String message, List<Content> history) async* {
+  static Stream<String> sendMessageStream(String message, List<Content> history, {String? userId}) async* {
+    // Guard Rails: Validação de entrada
+    final validation = AiGuardRailsService.validateTextInput(message);
+    if (!validation.isValid) {
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'stream_blocked', 
+        metadata: {'reason': validation.message});
+      yield 'Mensagem inválida: ${validation.message}';
+      return;
+    }
+
+    // Guard Rails: Rate limiting
+    final rateLimitCheck = AiGuardRailsService.checkRateLimit(userId ?? 'anonymous');
+    if (!rateLimitCheck.isValid) {
+      yield rateLimitCheck.message;
+      return;
+    }
+
     try {
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'send_message_stream', 
+        metadata: {'message_length': message.length});
+      
       final chat = model.startChat(history: history);
-      final content = Content.text(message);
+      final content = Content.text(validation.data);
       final response = chat.sendMessageStream(content);
       
+      String fullResponse = '';
       await for (final chunk in response) {
         if (chunk.text != null) {
-          yield chunk.text!;
+          fullResponse += chunk.text!;
+          // Guard Rails: Sanitização incremental
+          final sanitizedChunk = AiGuardRailsService.sanitizeAiResponse(chunk.text!);
+          yield sanitizedChunk;
         }
       }
+      
+      // Log da resposta completa
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'stream_completed', 
+        metadata: {'response_length': fullResponse.length});
+        
     } catch (e) {
       print('Erro no streaming da Mag IA: $e');
+      AiGuardRailsService.logAiUsage(userId ?? 'anonymous', 'stream_error', 
+        metadata: {'error': e.toString()});
       yield 'Desculpe, ocorreu um erro. Tente novamente.';
+    } finally {
+      AiGuardRailsService.endRequest();
     }
   }
 
